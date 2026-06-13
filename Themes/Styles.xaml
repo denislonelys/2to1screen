@@ -1,0 +1,356 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <!-- ============================ Palette ============================ -->
+    <Color x:Key="AccentColor">#D7E3F4</Color>
+
+    <SolidColorBrush x:Key="TextPrimary" Color="#F4F7FB" />
+    <SolidColorBrush x:Key="TextSecondary" Color="#B7C2D0" />
+    <SolidColorBrush x:Key="TextMuted" Color="#8893A2" />
+
+    <!-- Glass surfaces -->
+    <LinearGradientBrush x:Key="GlassFill" StartPoint="0,0" EndPoint="0,1">
+        <GradientStop Offset="0" Color="#3CFFFFFF" />
+        <GradientStop Offset="1" Color="#16FFFFFF" />
+    </LinearGradientBrush>
+
+    <LinearGradientBrush x:Key="GlassFillHover" StartPoint="0,0" EndPoint="0,1">
+        <GradientStop Offset="0" Color="#58FFFFFF" />
+        <GradientStop Offset="1" Color="#26FFFFFF" />
+    </LinearGradientBrush>
+
+    <SolidColorBrush x:Key="GlassStroke" Color="#55FFFFFF" />
+    <SolidColorBrush x:Key="GlassStrokeSoft" Color="#33FFFFFF" />
+
+    <!-- Window backdrop (glass mode) -->
+    <LinearGradientBrush x:Key="WindowFillGlass" StartPoint="0,0" EndPoint="0.6,1">
+        <GradientStop Offset="0" Color="#52FAFBFD" />
+        <GradientStop Offset="0.5" Color="#3CC9D2DE" />
+        <GradientStop Offset="1" Color="#4A8E97A6" />
+    </LinearGradientBrush>
+
+    <!-- Window backdrop (solid / glass disabled) -->
+    <LinearGradientBrush x:Key="WindowFillSolid" StartPoint="0,0" EndPoint="0.6,1">
+        <GradientStop Offset="0" Color="#FF2B3038" />
+        <GradientStop Offset="0.55" Color="#FF20242B" />
+        <GradientStop Offset="1" Color="#FF15181D" />
+    </LinearGradientBrush>
+
+    <!-- Sidebar -->
+    <LinearGradientBrush x:Key="SidebarFill" StartPoint="0,0" EndPoint="0,1">
+        <GradientStop Offset="0" Color="#30FFFFFF" />
+        <GradientStop Offset="1" Color="#10FFFFFF" />
+    </LinearGradientBrush>
+
+    <!-- Accent -->
+    <LinearGradientBrush x:Key="AccentGradient" StartPoint="0,0" EndPoint="0,1">
+        <GradientStop Offset="0" Color="#FFEFF4FB" />
+        <GradientStop Offset="1" Color="#FFB9CBE2" />
+    </LinearGradientBrush>
+
+    <LinearGradientBrush x:Key="RunningGradient" StartPoint="0,0" EndPoint="0,1">
+        <GradientStop Offset="0" Color="#FF8BE6B4" />
+        <GradientStop Offset="1" Color="#FF49B987" />
+    </LinearGradientBrush>
+
+    <SolidColorBrush x:Key="SwitchOff" Color="#3AFFFFFF" />
+    <SolidColorBrush x:Key="AccentSolid" Color="#FFCFE0F2" />
+
+    <!-- ============================ Text ============================ -->
+    <Style x:Key="H1" TargetType="TextBlock">
+        <Setter Property="Foreground" Value="{StaticResource TextPrimary}" />
+        <Setter Property="FontSize" Value="26" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+        <Setter Property="TextOptions.TextFormattingMode" Value="Ideal" />
+    </Style>
+
+    <Style x:Key="H2" TargetType="TextBlock">
+        <Setter Property="Foreground" Value="{StaticResource TextPrimary}" />
+        <Setter Property="FontSize" Value="15" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+    </Style>
+
+    <Style x:Key="Body" TargetType="TextBlock">
+        <Setter Property="Foreground" Value="{StaticResource TextSecondary}" />
+        <Setter Property="FontSize" Value="13" />
+        <Setter Property="TextWrapping" Value="Wrap" />
+        <Setter Property="LineHeight" Value="19" />
+    </Style>
+
+    <Style x:Key="Caption" TargetType="TextBlock">
+        <Setter Property="Foreground" Value="{StaticResource TextMuted}" />
+        <Setter Property="FontSize" Value="11.5" />
+    </Style>
+
+    <!-- ============================ Card ============================ -->
+    <Style x:Key="Card" TargetType="Border">
+        <Setter Property="Background" Value="{StaticResource GlassFill}" />
+        <Setter Property="BorderBrush" Value="{StaticResource GlassStrokeSoft}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="CornerRadius" Value="16" />
+        <Setter Property="Padding" Value="18" />
+    </Style>
+
+    <!-- ============================ Glass button ============================ -->
+    <Style x:Key="GlassButton" TargetType="Button">
+        <Setter Property="Foreground" Value="{StaticResource TextPrimary}" />
+        <Setter Property="FontSize" Value="13" />
+        <Setter Property="FontWeight" Value="Medium" />
+        <Setter Property="Padding" Value="16,9" />
+        <Setter Property="Cursor" Value="Hand" />
+        <Setter Property="SnapsToDevicePixels" Value="True" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+                    <Border x:Name="bd" CornerRadius="11"
+                            Background="{StaticResource GlassFill}"
+                            BorderBrush="{StaticResource GlassStroke}"
+                            BorderThickness="1"
+                            Padding="{TemplateBinding Padding}">
+                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="bd" Property="Background" Value="{StaticResource GlassFillHover}" />
+                        </Trigger>
+                        <Trigger Property="IsPressed" Value="True">
+                            <Setter TargetName="bd" Property="Background" Value="{StaticResource GlassStrokeSoft}" />
+                        </Trigger>
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter Property="Opacity" Value="0.45" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- ============================ Accent button (Launch) ============================ -->
+    <Style x:Key="AccentButton" TargetType="Button">
+        <Setter Property="Foreground" Value="#FF15202B" />
+        <Setter Property="FontSize" Value="15" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+        <Setter Property="Padding" Value="26,13" />
+        <Setter Property="Cursor" Value="Hand" />
+        <Setter Property="Background" Value="{StaticResource AccentGradient}" />
+        <Setter Property="SnapsToDevicePixels" Value="True" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+                    <Grid>
+                        <Border x:Name="bd" CornerRadius="14"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="#66FFFFFF" BorderThickness="1">
+                            <Border.Effect>
+                                <DropShadowEffect Color="#FFBFD6F2" BlurRadius="18"
+                                                  ShadowDepth="0" Opacity="0.5" />
+                            </Border.Effect>
+                        </Border>
+                        <Border x:Name="overlay" CornerRadius="14" Background="Transparent"
+                                Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        </Border>
+                    </Grid>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="overlay" Property="Background" Value="#26FFFFFF" />
+                        </Trigger>
+                        <Trigger Property="IsPressed" Value="True">
+                            <Setter TargetName="overlay" Property="Background" Value="#22000000" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- ============================ Window control buttons ============================ -->
+    <Style x:Key="CaptionButton" TargetType="Button">
+        <Setter Property="Foreground" Value="{StaticResource TextSecondary}" />
+        <Setter Property="FontFamily" Value="Segoe MDL2 Assets" />
+        <Setter Property="FontSize" Value="11" />
+        <Setter Property="Width" Value="40" />
+        <Setter Property="Height" Value="30" />
+        <Setter Property="Cursor" Value="Hand" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+                    <Border x:Name="bd" CornerRadius="8" Background="Transparent">
+                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="bd" Property="Background" Value="#30FFFFFF" />
+                            <Setter Property="Foreground" Value="{StaticResource TextPrimary}" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <Style x:Key="CloseButton" TargetType="Button" BasedOn="{StaticResource CaptionButton}">
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+                    <Border x:Name="bd" CornerRadius="8" Background="Transparent">
+                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="bd" Property="Background" Value="#E0C0392B" />
+                            <Setter Property="Foreground" Value="White" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- ============================ Nav item (RadioButton) ============================ -->
+    <Style x:Key="NavItem" TargetType="RadioButton">
+        <Setter Property="Foreground" Value="{StaticResource TextSecondary}" />
+        <Setter Property="Cursor" Value="Hand" />
+        <Setter Property="Margin" Value="10,4" />
+        <Setter Property="SnapsToDevicePixels" Value="True" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="RadioButton">
+                    <Border x:Name="bd" CornerRadius="14" Background="Transparent"
+                            BorderBrush="Transparent" BorderThickness="1" Padding="0,12">
+                        <StackPanel HorizontalAlignment="Center">
+                            <TextBlock x:Name="emoji" Text="{TemplateBinding Tag}"
+                                       FontSize="22" HorizontalAlignment="Center"
+                                       TextOptions.TextFormattingMode="Ideal" />
+                            <ContentPresenter x:Name="label" HorizontalAlignment="Center" Margin="0,5,0,0" />
+                        </StackPanel>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="bd" Property="Background" Value="#22FFFFFF" />
+                            <Setter Property="Foreground" Value="{StaticResource TextPrimary}" />
+                        </Trigger>
+                        <Trigger Property="IsChecked" Value="True">
+                            <Setter TargetName="bd" Property="Background" Value="{StaticResource GlassFillHover}" />
+                            <Setter TargetName="bd" Property="BorderBrush" Value="{StaticResource GlassStroke}" />
+                            <Setter Property="Foreground" Value="{StaticResource TextPrimary}" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- ============================ Select chip (RadioButton) ============================ -->
+    <Style x:Key="SelectChip" TargetType="RadioButton">
+        <Setter Property="Foreground" Value="{StaticResource TextSecondary}" />
+        <Setter Property="FontSize" Value="13" />
+        <Setter Property="Cursor" Value="Hand" />
+        <Setter Property="Margin" Value="0,0,8,8" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="RadioButton">
+                    <Border x:Name="bd" CornerRadius="10"
+                            Background="{StaticResource GlassFill}"
+                            BorderBrush="{StaticResource GlassStrokeSoft}"
+                            BorderThickness="1" Padding="14,9">
+                        <ContentPresenter VerticalAlignment="Center" />
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="bd" Property="Background" Value="{StaticResource GlassFillHover}" />
+                        </Trigger>
+                        <Trigger Property="IsChecked" Value="True">
+                            <Setter TargetName="bd" Property="Background" Value="{StaticResource AccentSolid}" />
+                            <Setter TargetName="bd" Property="BorderBrush" Value="#88FFFFFF" />
+                            <Setter Property="Foreground" Value="#FF18222E" />
+                            <Setter Property="FontWeight" Value="SemiBold" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- ============================ Selectable row (RadioButton, monitors) ============================ -->
+    <Style x:Key="SelectRow" TargetType="RadioButton">
+        <Setter Property="Foreground" Value="{StaticResource TextPrimary}" />
+        <Setter Property="Cursor" Value="Hand" />
+        <Setter Property="Margin" Value="0,0,0,8" />
+        <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="RadioButton">
+                    <Border x:Name="bd" CornerRadius="12"
+                            Background="{StaticResource GlassFill}"
+                            BorderBrush="{StaticResource GlassStrokeSoft}"
+                            BorderThickness="1" Padding="14,12">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <ContentPresenter Grid.Column="0" VerticalAlignment="Center" />
+                            <Ellipse x:Name="dot" Grid.Column="1" Width="16" Height="16"
+                                     Stroke="{StaticResource GlassStroke}" StrokeThickness="1.5"
+                                     Fill="Transparent" VerticalAlignment="Center" />
+                        </Grid>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="bd" Property="Background" Value="{StaticResource GlassFillHover}" />
+                        </Trigger>
+                        <Trigger Property="IsChecked" Value="True">
+                            <Setter TargetName="bd" Property="Background" Value="{StaticResource GlassFillHover}" />
+                            <Setter TargetName="bd" Property="BorderBrush" Value="#99FFFFFF" />
+                            <Setter TargetName="dot" Property="Fill" Value="{StaticResource AccentSolid}" />
+                            <Setter TargetName="dot" Property="Stroke" Value="#FFFFFFFF" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- ============================ Glass switch (CheckBox) ============================ -->
+    <Style x:Key="GlassSwitch" TargetType="CheckBox">
+        <Setter Property="Cursor" Value="Hand" />
+        <Setter Property="SnapsToDevicePixels" Value="True" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="CheckBox">
+                    <Grid Width="48" Height="28">
+                        <Border x:Name="track" CornerRadius="14"
+                                Background="{StaticResource SwitchOff}"
+                                BorderBrush="{StaticResource GlassStroke}" BorderThickness="1" />
+                        <Border x:Name="thumb" Width="20" Height="20" CornerRadius="10"
+                                Background="#FFF2F5F9" HorizontalAlignment="Left" Margin="4,0,0,0">
+                            <Border.Effect>
+                                <DropShadowEffect Color="#000000" BlurRadius="6" ShadowDepth="0" Opacity="0.35" />
+                            </Border.Effect>
+                        </Border>
+                    </Grid>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsChecked" Value="True">
+                            <Setter TargetName="track" Property="Background" Value="{StaticResource AccentSolid}" />
+                            <Setter TargetName="track" Property="BorderBrush" Value="#88FFFFFF" />
+                            <Setter TargetName="thumb" Property="HorizontalAlignment" Value="Right" />
+                            <Setter TargetName="thumb" Property="Margin" Value="0,0,4,0" />
+                            <Setter TargetName="thumb" Property="Background" Value="#FF1B2530" />
+                        </Trigger>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="track" Property="BorderBrush" Value="#AAFFFFFF" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- ============================ Slider (compact) ============================ -->
+    <Style x:Key="GlassSlider" TargetType="Slider">
+        <Setter Property="Foreground" Value="{StaticResource AccentSolid}" />
+        <Setter Property="Height" Value="24" />
+    </Style>
+
+</ResourceDictionary>

@@ -1,0 +1,12 @@
+## Build output
+bin/
+obj/
+publish/
+
+## Rider / VS
+.vs/
+.idea/
+*.user
+
+## Misc
+*.pdb
