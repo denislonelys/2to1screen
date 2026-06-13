@@ -56,6 +56,9 @@ namespace TwoTo1Screen.Services
         internal const int VK_SNAPSHOT = 0x2C;
         internal const int VK_LWIN = 0x5B;
         internal const int VK_RWIN = 0x5C;
+        internal const int VK_SHIFT = 0x10;
+        internal const int VK_CONTROL = 0x11;
+        internal const int VK_MENU = 0x12; // Alt
 
         internal delegate IntPtr LowLevelKeyboardProc(int nCode, IntPtr wParam, IntPtr lParam);
 

@@ -10,8 +10,8 @@
         FontFamily="Segoe UI" TextOptions.TextFormattingMode="Ideal" UseLayoutRounding="True">
 
     <Border x:Name="RootBorder" CornerRadius="18"
-            Background="{DynamicResource WindowFillGlass}"
-            BorderBrush="{StaticResource GlassStroke}" BorderThickness="1">
+            Background="{DynamicResource WindowBackdrop}"
+            BorderBrush="{DynamicResource GlassStroke}" BorderThickness="1">
         <Grid Margin="22,18,22,18">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto" />
@@ -35,7 +35,7 @@
                         <ColumnDefinition Width="Auto" />
                     </Grid.ColumnDefinitions>
                     <TextBlock Grid.Column="0" Text="Масштаб разрешения" Style="{StaticResource H2}" />
-                    <TextBlock x:Name="ScaleValue" Grid.Column="1" Style="{StaticResource H2}" Foreground="{StaticResource TextPrimary}" />
+                    <TextBlock x:Name="ScaleValue" Grid.Column="1" Style="{StaticResource H2}" Foreground="{DynamicResource TextPrimary}" />
                 </Grid>
                 <Slider x:Name="ScaleSlider" Style="{StaticResource GlassSlider}" Minimum="10" Maximum="100"
                         SmallChange="1" LargeChange="10" TickFrequency="1" IsSnapToTickEnabled="True"

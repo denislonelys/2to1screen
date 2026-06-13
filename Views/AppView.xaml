@@ -62,6 +62,25 @@
                         <CheckBox x:Name="SwGlass" Grid.Column="1" Style="{StaticResource GlassSwitch}"
                                   VerticalAlignment="Center" Click="SwGlass_Click" />
                     </Grid>
+
+                    <!-- Liquid Glass accent palette -->
+                    <StackPanel x:Name="GlassAccentPanel">
+                        <Border Height="1" Background="#22FFFFFF" Margin="0,16" />
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                                <TextBlock Text="Цвет темы Liquid Glass" Style="{StaticResource H2}" />
+                                <TextBlock Style="{StaticResource Caption}" Margin="0,3,0,0"
+                                           Text="Выберите основной цвет — он применится ко всем стеклянным элементам." />
+                            </StackPanel>
+                            <Button x:Name="BtnCustomColor" Grid.Column="1" Style="{StaticResource GlassButton}"
+                                    Content="Свой цвет…" VerticalAlignment="Center" Click="BtnCustomColor_Click" />
+                        </Grid>
+                        <WrapPanel x:Name="AccentPalette" Margin="0,14,0,0" />
+                    </StackPanel>
                 </StackPanel>
             </Border>
         </StackPanel>

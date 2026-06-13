@@ -1,3 +1,4 @@
+using System;
 using System.ComponentModel;
 using System.Windows;
 using System.Windows.Controls;
@@ -14,51 +15,80 @@ namespace TwoTo1Screen
         public MainWindow()
         {
             InitializeComponent();
+
             SourceInitialized += (_, __) => ApplyTheme();
+            ThemeManager.Changed += OnThemeChanged;
+
+            BackdropHost.SizeChanged += (_, __) => ClipBackdrop();
+
             Loaded += (_, __) =>
             {
                 PageApp.Bind(this);
                 PageSettings.Bind(this);
+                PageThemes.Bind(this);
                 RefreshRunningState();
             };
+
+            Closed += (_, __) => ThemeManager.Changed -= OnThemeChanged;
         }
 
-        /// <summary>Apply or remove the Liquid Glass backdrop based on settings.</summary>
+        private void OnThemeChanged()
+        {
+            ThemeManager.ApplyWindowChrome(this, RootBorder, BackdropHost);
+            ClipBackdrop();
+        }
+
+        private void ClipBackdrop()
+        {
+            if (BackdropHost.ActualWidth > 0 && BackdropHost.ActualHeight > 0)
+            {
+                BackdropHost.Clip = new RectangleGeometry(
+                    new Rect(0, 0, BackdropHost.ActualWidth, BackdropHost.ActualHeight), 20, 20);
+            }
+        }
+
+        /// <summary>Apply the active appearance (Liquid Glass or a store theme).</summary>
         public void ApplyTheme()
         {
-            if (App.Settings.LiquidGlassDisabled)
-            {
-                RootBorder.SetResourceReference(Border.BackgroundProperty, "WindowFillSolid");
-                Glass.Disable(this);
-            }
-            else
-            {
-                RootBorder.SetResourceReference(Border.BackgroundProperty, "WindowFillGlass");
-                Glass.Enable(this);
-            }
+            ThemeManager.ApplyCurrent();
+            ThemeManager.ApplyWindowChrome(this, RootBorder, BackdropHost);
+            ClipBackdrop();
+        }
+
+        /// <summary>Re-sync the Application tab toggles after a settings change elsewhere.</summary>
+        public void SyncAppView()
+        {
+            PageApp.SyncFromSettings();
         }
 
         public void RefreshRunningState()
         {
             bool running = App.Current.IsRunning;
-            StatusDot.Fill = running
+            bool paused = App.Current.IsPaused;
+
+            StatusDot.Fill = running && !paused
                 ? new SolidColorBrush(Color.FromRgb(0x5C, 0xCB, 0x8E))
-                : new SolidColorBrush(Color.FromRgb(0x88, 0x93, 0xA2));
-            StatusText.Text = running ? "Работает" : "Выкл.";
+                : (running && paused
+                    ? new SolidColorBrush(Color.FromRgb(0xE0, 0xB3, 0x4A))
+                    : new SolidColorBrush(Color.FromRgb(0x88, 0x93, 0xA2)));
+            StatusText.Text = running ? (paused ? "Пауза" : "Работает") : "Выкл.";
             PageApp.RefreshRunningState();
         }
 
         private void Nav_Checked(object sender, RoutedEventArgs e)
         {
-            if (PageApp == null || PageSettings == null || PageDev == null)
+            if (PageApp == null || PageSettings == null || PageThemes == null || PageDev == null)
                 return;
 
             PageApp.Visibility = NavApp.IsChecked == true ? Visibility.Visible : Visibility.Collapsed;
             PageSettings.Visibility = NavSettings.IsChecked == true ? Visibility.Visible : Visibility.Collapsed;
+            PageThemes.Visibility = NavThemes.IsChecked == true ? Visibility.Visible : Visibility.Collapsed;
             PageDev.Visibility = NavDev.IsChecked == true ? Visibility.Visible : Visibility.Collapsed;
 
             if (NavSettings.IsChecked == true)
                 PageSettings.ReloadFromSettings();
+            if (NavThemes.IsChecked == true)
+                PageThemes.Reload();
         }
 
         private void TitleBar_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)

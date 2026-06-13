@@ -19,6 +19,7 @@ namespace TwoTo1Screen
         public static new App Current => (App)System.Windows.Application.Current;
 
         public bool IsRunning => _hook?.IsActive == true;
+        public bool IsPaused => _hook?.IsPaused == true;
 
         protected override void OnStartup(StartupEventArgs e)
         {
@@ -54,7 +55,9 @@ namespace TwoTo1Screen
             }
 
             Settings = AppSettings.Load();
+            ThemeManager.ApplyCurrent();
             _hook = new HotkeyHook(() => Settings);
+            _hook.PausedChanged += OnPausedChanged;
             CaptureController.Captured += OnCaptured;
 
             // We manage shutdown ourselves so the background service can keep
@@ -131,6 +134,18 @@ namespace TwoTo1Screen
         {
             _hook?.Stop();
             _tray?.SetRunning(IsRunning);
+        }
+
+        private void OnPausedChanged(bool paused)
+        {
+            Dispatcher.BeginInvoke(new Action(() =>
+            {
+                _tray?.Notify("2to1screen", paused
+                    ? "Перехват приостановлен (горячая клавиша)."
+                    : "Перехват возобновлён.");
+                _tray?.SetRunning(IsRunning);
+                _main?.RefreshRunningState();
+            }));
         }
 
         private void OnCaptured(string? path)

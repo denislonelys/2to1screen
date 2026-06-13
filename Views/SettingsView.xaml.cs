@@ -17,6 +17,20 @@ namespace TwoTo1Screen.Views
         public SettingsView()
         {
             InitializeComponent();
+
+            HkCapture.AllowEmpty = false;
+            HkToggle.AllowEmpty = true;
+            HkCapture.ValueChanged += hk =>
+            {
+                if (!hk.IsSet) { hk = Hotkey.PrintScreen(); HkCapture.Value = hk; }
+                App.Settings.CaptureHotkey = hk;
+                App.Settings.Save();
+            };
+            HkToggle.ValueChanged += hk =>
+            {
+                App.Settings.ToggleHotkey = hk;
+                App.Settings.Save();
+            };
         }
 
         public void Bind(MainWindow host)
@@ -39,6 +53,9 @@ namespace TwoTo1Screen.Views
                 SwWinPs.IsChecked = App.Settings.InterceptWinPrintScreen;
                 SwSound.IsChecked = App.Settings.ShutterSound;
                 SwNotify.IsChecked = App.Settings.ShowNotification;
+
+                HkCapture.Value = (App.Settings.CaptureHotkey ?? Hotkey.PrintScreen()).Clone();
+                HkToggle.Value = (App.Settings.ToggleHotkey ?? new Hotkey()).Clone();
 
                 FolderText.Text = App.Settings.SaveFolder;
             }
@@ -189,6 +206,11 @@ namespace TwoTo1Screen.Views
             App.Settings.ShutterSound = SwSound.IsChecked == true;
             App.Settings.ShowNotification = SwNotify.IsChecked == true;
             App.Settings.Save();
+        }
+
+        private void BtnTestSound_Click(object sender, RoutedEventArgs e)
+        {
+            ShutterSound.Play();
         }
 
         private void BtnFolder_Click(object sender, RoutedEventArgs e)

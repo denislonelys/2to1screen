@@ -1,0 +1,35 @@
+<UserControl x:Class="TwoTo1Screen.Views.ThemeStoreView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <Grid Margin="8,4,2,0">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <StackPanel Grid.Row="0" Margin="2,0,2,12">
+            <TextBlock Text="Магазин тем" Style="{StaticResource H1}" />
+            <TextBlock Style="{StaticResource Body}" Margin="0,4,0,0"
+                       Text="Современные оформления вместо Liquid Glass — в том числе анимированные. Клик колёсиком мыши открывает полноэкранный предпросмотр." />
+        </StackPanel>
+
+        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" Padding="0,0,8,0">
+            <StackPanel>
+                <Border x:Name="GlassNotice" Style="{StaticResource Card}" Margin="0,0,0,14"
+                        Background="#332C7BE0" BorderBrush="#553C8DFF">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="💧" FontSize="20" VerticalAlignment="Center"
+                                   TextOptions.TextFormattingMode="Ideal" />
+                        <TextBlock Style="{StaticResource Body}" VerticalAlignment="Center" Margin="12,0,0,0"
+                                   Text="Сейчас включён Liquid Glass. Чтобы применить тему из магазина, его нужно выключить — приложение спросит подтверждение." />
+                    </StackPanel>
+                </Border>
+
+                <WrapPanel x:Name="CardsHost" />
+
+                <TextBlock Style="{StaticResource Caption}" Margin="2,6,0,14"
+                           Text="Подсказка: левый клик — применить тему, клик колёсиком — полноэкранный предпросмотр." />
+            </StackPanel>
+        </ScrollViewer>
+    </Grid>
+</UserControl>

@@ -27,15 +27,7 @@ namespace TwoTo1Screen.Views
 
             SourceInitialized += (_, __) =>
             {
-                if (App.Settings.LiquidGlassDisabled)
-                {
-                    RootBorder.SetResourceReference(BackgroundProperty, "WindowFillSolid");
-                    Glass.Disable(this);
-                }
-                else
-                {
-                    Glass.Enable(this);
-                }
+                ThemeManager.ApplyWindowChrome(this, RootBorder, null);
             };
 
             // initial scale from saved width (relative to max)

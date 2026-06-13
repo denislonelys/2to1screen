@@ -43,6 +43,18 @@ namespace TwoTo1Screen.Services
         public bool LiquidGlassDisabled { get; set; } = false;
         public bool AutoStart { get; set; } = false;
 
+        // ---- Appearance (v1.1) ----
+        /// <summary>Primary accent color of the Liquid Glass theme (hex #RRGGBB).</summary>
+        public string LiquidGlassAccent { get; set; } = "#CFE0F2";
+        /// <summary>Selected store theme id, used when Liquid Glass is disabled.</summary>
+        public string ThemeId { get; set; } = "midnight";
+
+        // ---- Hotkeys (v1.1) ----
+        /// <summary>Key combination that triggers a single-monitor capture.</summary>
+        public Hotkey CaptureHotkey { get; set; } = Hotkey.PrintScreen();
+        /// <summary>Global key combination that pauses / resumes interception (works from tray).</summary>
+        public Hotkey ToggleHotkey { get; set; } = new Hotkey(0x2C, ctrl: true, alt: true); // Ctrl+Alt+PrtSc
+
         [JsonIgnore]
         public static string Dir =>
             Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "2to1screen");
@@ -90,6 +102,15 @@ namespace TwoTo1Screen.Services
             }
             if (CustomJpegQuality < 1 || CustomJpegQuality > 100)
                 CustomJpegQuality = 92;
+
+            if (CaptureHotkey == null || !CaptureHotkey.IsSet)
+                CaptureHotkey = Hotkey.PrintScreen();
+            if (ToggleHotkey == null)
+                ToggleHotkey = new Hotkey();
+            if (string.IsNullOrWhiteSpace(LiquidGlassAccent))
+                LiquidGlassAccent = "#CFE0F2";
+            if (string.IsNullOrWhiteSpace(ThemeId))
+                ThemeId = "midnight";
         }
 
         public void Save()

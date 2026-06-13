@@ -13,17 +13,21 @@ namespace TwoTo1Screen.Services
         // that lets the wallpaper show through while still reading as glass.
         public const uint SilverTint = 0x8CD8D2C8;
 
-        public static void Enable(Window window)
+        public static void Enable(Window window) => Enable(window, SilverTint);
+
+        public static void Enable(Window window, uint tint)
         {
             var hwnd = new WindowInteropHelper(window).Handle;
             if (hwnd == IntPtr.Zero) return;
-            Enable(hwnd);
+            Enable(hwnd, tint);
             RoundCorners(hwnd);
         }
 
-        public static void Enable(IntPtr hwnd)
+        public static void Enable(IntPtr hwnd) => Enable(hwnd, SilverTint);
+
+        public static void Enable(IntPtr hwnd, uint tint)
         {
-            ApplyAccent(hwnd, AccentStateEnum.ACCENT_ENABLE_ACRYLICBLURBEHIND, SilverTint);
+            ApplyAccent(hwnd, AccentStateEnum.ACCENT_ENABLE_ACRYLICBLURBEHIND, tint);
         }
 
         public static void Disable(Window window)

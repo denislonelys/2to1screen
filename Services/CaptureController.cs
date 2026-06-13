@@ -41,8 +41,7 @@ namespace TwoTo1Screen.Services
 
                 if (s.ShutterSound)
                 {
-                    try { System.Media.SystemSounds.Asterisk.Play(); }
-                    catch { }
+                    ShutterSound.Play();
                 }
 
                 Captured?.Invoke(result.FilePath);
