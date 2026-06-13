@@ -111,7 +111,7 @@ namespace TwoTo1Screen.Services
             }
             else if (glass)
             {
-                byte a = (byte)(0xCA - t * (0xCA - 0x18) / 100); // 0 -> opaque wash, 100 -> very transparent
+                byte a = (byte)(0xFF - t * (0xFF - 0x16) / 100); // 0 -> непрозрачно, 100 -> почти прозрачно
                 res["WindowFill"] = DiagGrad(WithA(bg, a), WithA(bg2, a), WithA(surface, a));
             }
             else
@@ -131,7 +131,7 @@ namespace TwoTo1Screen.Services
             {
                 int t = Math.Clamp(s.GlassTransparency, 0, 100);
                 Color bg = Hex(p.Bg, Color.FromRgb(0x15, 0x18, 0x1D));
-                byte tintA = (byte)(0xC4 - t * (0xC4 - 0x12) / 100);
+                byte tintA = (byte)(0xFF - t * (0xFF - 0x12) / 100);
                 uint tint = (uint)((tintA << 24) | (bg.B << 16) | (bg.G << 8) | bg.R); // 0xAABBGGRR
                 Glass.EnableAcrylic(hwnd, tint);
             }
