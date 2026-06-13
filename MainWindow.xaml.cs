@@ -1,10 +1,10 @@
 using System;
 using System.ComponentModel;
 using System.Windows;
-using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
 using TwoTo1Screen.Services;
+using TwoTo1Screen.Views;
 
 namespace TwoTo1Screen
 {
@@ -15,63 +15,70 @@ namespace TwoTo1Screen
         public MainWindow()
         {
             InitializeComponent();
+            PreviewMouseDown += BindHelper.HandleMiddleClick;
+            BindHelper.HotkeysChanged += OnHotkeysChanged;
 
             SourceInitialized += (_, __) => ApplyTheme();
-            ThemeManager.Changed += OnThemeChanged;
-
-            BackdropHost.SizeChanged += (_, __) => ClipBackdrop();
-
             Loaded += (_, __) =>
             {
                 PageApp.Bind(this);
                 PageSettings.Bind(this);
                 PageThemes.Bind(this);
                 RefreshRunningState();
+                RefreshLicenseUi();
             };
-
-            Closed += (_, __) => ThemeManager.Changed -= OnThemeChanged;
+            Closed += (_, __) => BindHelper.HotkeysChanged -= OnHotkeysChanged;
         }
 
-        private void OnThemeChanged()
+        private void OnHotkeysChanged()
         {
-            ThemeManager.ApplyWindowChrome(this, RootBorder, BackdropHost);
-            ClipBackdrop();
+            PageApp.RefreshHotkeyHints();
+            PageSettings.RefreshHotkeyHints();
         }
 
-        private void ClipBackdrop()
-        {
-            if (BackdropHost.ActualWidth > 0 && BackdropHost.ActualHeight > 0)
-            {
-                BackdropHost.Clip = new RectangleGeometry(
-                    new Rect(0, 0, BackdropHost.ActualWidth, BackdropHost.ActualHeight), 20, 20);
-            }
-        }
-
-        /// <summary>Apply the active appearance (Liquid Glass or a store theme).</summary>
+        /// <summary>Apply the active theme (resources + window acrylic).</summary>
         public void ApplyTheme()
         {
-            ThemeManager.ApplyCurrent();
-            ThemeManager.ApplyWindowChrome(this, RootBorder, BackdropHost);
-            ClipBackdrop();
+            App.Current.ApplyThemeResources();
+            ThemeService.ApplyWindowGlass(this, App.Settings);
         }
 
-        /// <summary>Re-sync the Application tab toggles after a settings change elsewhere.</summary>
-        public void SyncAppView()
+        public void SyncThemeControls()
         {
-            PageApp.SyncFromSettings();
+            PageThemes.ReloadFromSettings();
+            PageApp.RefreshRunningState();
+        }
+
+        public void RefreshLicenseUi()
+        {
+            var info = LicenseService.Current;
+            string text; Color color;
+            switch (info.Status)
+            {
+                case LicenseStatus.Licensed:
+                    text = info.Lifetime ? "Активировано · бессрочно" : "Активировано";
+                    color = Color.FromRgb(0x49, 0xB9, 0x87); break;
+                case LicenseStatus.Trial:
+                    text = "Пробная версия"; color = Color.FromRgb(0xD9, 0xA5, 0x3B); break;
+                default:
+                    text = "Не активировано"; color = Color.FromRgb(0xC0, 0x39, 0x2B); break;
+            }
+            LicenseBadgeText.Text = text;
+            LicenseBadge.Background = new SolidColorBrush(Color.FromArgb(0x33, color.R, color.G, color.B));
+
+            bool full = App.Current.LicenseFull;
+            // gate Settings & Themes behind a valid licence
+            NavSettings.Opacity = full ? 1.0 : 0.55;
+            NavThemes.Opacity = full ? 1.0 : 0.55;
         }
 
         public void RefreshRunningState()
         {
             bool running = App.Current.IsRunning;
-            bool paused = App.Current.IsPaused;
-
-            StatusDot.Fill = running && !paused
+            StatusDot.Fill = running
                 ? new SolidColorBrush(Color.FromRgb(0x5C, 0xCB, 0x8E))
-                : (running && paused
-                    ? new SolidColorBrush(Color.FromRgb(0xE0, 0xB3, 0x4A))
-                    : new SolidColorBrush(Color.FromRgb(0x88, 0x93, 0xA2)));
-            StatusText.Text = running ? (paused ? "Пауза" : "Работает") : "Выкл.";
+                : new SolidColorBrush(Color.FromRgb(0x88, 0x93, 0xA2));
+            StatusText.Text = running ? "Работает" : "Выкл.";
             PageApp.RefreshRunningState();
         }
 
@@ -80,40 +87,40 @@ namespace TwoTo1Screen
             if (PageApp == null || PageSettings == null || PageThemes == null || PageDev == null)
                 return;
 
+            // gating: Settings & Themes require a full licence
+            if ((NavSettings.IsChecked == true || NavThemes.IsChecked == true) && !App.Current.LicenseFull)
+            {
+                System.Windows.MessageBox.Show(
+                    "Этот раздел доступен только после активации программы по ключу.\n\n" +
+                    "Без активации доступны только запуск и фоновый режим.",
+                    "2to1screen — нужна активация", MessageBoxButton.OK, MessageBoxImage.Information);
+                NavApp.IsChecked = true;
+                return;
+            }
+
             PageApp.Visibility = NavApp.IsChecked == true ? Visibility.Visible : Visibility.Collapsed;
             PageSettings.Visibility = NavSettings.IsChecked == true ? Visibility.Visible : Visibility.Collapsed;
             PageThemes.Visibility = NavThemes.IsChecked == true ? Visibility.Visible : Visibility.Collapsed;
             PageDev.Visibility = NavDev.IsChecked == true ? Visibility.Visible : Visibility.Collapsed;
 
-            if (NavSettings.IsChecked == true)
-                PageSettings.ReloadFromSettings();
-            if (NavThemes.IsChecked == true)
-                PageThemes.Reload();
+            if (NavSettings.IsChecked == true) PageSettings.ReloadFromSettings();
+            if (NavThemes.IsChecked == true) PageThemes.ReloadFromSettings();
         }
 
         private void TitleBar_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
-            if (e.ButtonState == MouseButtonState.Pressed)
-            {
-                try { DragMove(); } catch { }
-            }
+            if (e.ButtonState == MouseButtonState.Pressed) { try { DragMove(); } catch { } }
         }
 
         private void BtnMin_Click(object sender, RoutedEventArgs e) => WindowState = WindowState.Minimized;
-
         private void BtnClose_Click(object sender, RoutedEventArgs e) => Close();
 
         protected override void OnClosing(CancelEventArgs e)
         {
-            if (_exiting)
-            {
-                base.OnClosing(e);
-                return;
-            }
+            if (_exiting || App.Current.IsForceExiting) { base.OnClosing(e); return; }
 
             if (App.Current.IsRunning)
             {
-                // Keep the capture service running in the tray.
                 e.Cancel = true;
                 Hide();
                 App.Current.NotifyHidden();

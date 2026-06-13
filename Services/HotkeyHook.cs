@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using static TwoTo1Screen.Services.Native;
@@ -6,26 +7,21 @@ using static TwoTo1Screen.Services.Native;
 namespace TwoTo1Screen.Services
 {
     /// <summary>
-    /// Installs a global low-level keyboard hook that intercepts the configured
-    /// capture hot-key (Print Screen by default, incl. Win+PrintScreen) and,
-    /// instead of letting Windows capture every monitor, captures only the
-    /// configured monitor at full quality.
-    ///
-    /// Also listens for a global toggle hot-key that pauses / resumes
-    /// interception while the app sits minimized in the tray.
+    /// Global low-level keyboard hook. Intercepts PrintScreen (single-monitor
+    /// capture), optionally Win+D (single-monitor minimize) and any user-defined
+    /// action hotkeys.
     /// </summary>
     internal sealed class HotkeyHook : IDisposable
     {
         private IntPtr _hook = IntPtr.Zero;
-        private LowLevelKeyboardProc? _proc; // kept alive so it is not collected
+        private LowLevelKeyboardProc? _proc;
         private readonly Func<AppSettings> _settings;
-        private volatile bool _paused;
+        private readonly Dictionary<string, DateTime> _lastFire = new();
 
         public bool IsActive => _hook != IntPtr.Zero;
-        public bool IsPaused => _paused;
 
-        /// <summary>Raised on the UI thread when the global toggle flips the paused state.</summary>
-        public event Action<bool>? PausedChanged;
+        /// <summary>Invoked (on the UI dispatcher) when an action hotkey fires.</summary>
+        public Action<string>? OnAction;
 
         public HotkeyHook(Func<AppSettings> settings)
         {
@@ -34,10 +30,7 @@ namespace TwoTo1Screen.Services
 
         public void Start()
         {
-            if (_hook != IntPtr.Zero)
-                return;
-
-            _paused = false;
+            if (_hook != IntPtr.Zero) return;
             _proc = HookCallback;
             IntPtr hModule = GetModuleHandle(null);
             _hook = SetWindowsHookEx(WH_KEYBOARD_LL, _proc, hModule, 0);
@@ -51,15 +44,18 @@ namespace TwoTo1Screen.Services
                 _hook = IntPtr.Zero;
             }
             _proc = null;
-            _paused = false;
         }
 
-        public void SetPaused(bool paused)
+        private bool Debounce(string id, int ms = 500)
         {
-            if (_paused == paused) return;
-            _paused = paused;
-            PausedChanged?.Invoke(_paused);
+            var now = DateTime.UtcNow;
+            if (_lastFire.TryGetValue(id, out var t) && (now - t).TotalMilliseconds < ms)
+                return false;
+            _lastFire[id] = now;
+            return true;
         }
+
+        private static bool Down(int vk) => (GetAsyncKeyState(vk) & 0x8000) != 0;
 
         private IntPtr HookCallback(int nCode, IntPtr wParam, IntPtr lParam)
         {
@@ -72,52 +68,42 @@ namespace TwoTo1Screen.Services
                     uint vk = info.vkCode;
                     AppSettings s = _settings();
 
-                    // 1) Global toggle works even while paused.
-                    if (Matches(s.ToggleHotkey, vk))
-                    {
-                        SetPaused(!_paused);
-                        return (IntPtr)1; // swallow the toggle combo
-                    }
+                    bool ctrl = Down(VK_CONTROL), alt = Down(VK_MENU), shift = Down(VK_SHIFT);
+                    bool win = Down(VK_LWIN) || Down(VK_RWIN);
 
-                    if (!_paused)
+                    // 1) PrintScreen -> single-monitor capture
+                    if (vk == VK_SNAPSHOT)
                     {
-                        bool winDown =
-                            Down(VK_LWIN) || Down(VK_RWIN);
-
-                        // 2) Win + PrintScreen (the native dual-monitor combo) — always
-                        //    grabbed when enabled, regardless of the custom capture key.
-                        if (vk == VK_SNAPSHOT && winDown && s.InterceptWinPrintScreen)
+                        if (!win || s.InterceptWinPrintScreen)
                         {
                             Task.Run(() => CaptureController.DoCapture(s));
                             return (IntPtr)1;
                         }
+                    }
 
-                        // 3) The user-configured capture hot-key.
-                        if (Matches(s.CaptureHotkey, vk))
+                    // 2) Win+D -> minimize only the monitor under the cursor
+                    if (s.WinDSingleMonitor && vk == VK_D && win && !ctrl && !alt && !shift)
+                    {
+                        if (Debounce("windd"))
+                            Task.Run(() => { try { WindowManager.MinimizeMonitorUnderCursor(); } catch { } });
+                        return (IntPtr)1; // swallow the default show-desktop
+                    }
+
+                    // 3) user-defined action hotkeys
+                    if (vk != VK_CONTROL && vk != VK_MENU && vk != VK_SHIFT && vk != VK_LWIN && vk != VK_RWIN)
+                    {
+                        string? action = ActionRegistry.MatchAction(s, vk, ctrl, alt, shift, win);
+                        if (action != null)
                         {
-                            Task.Run(() => CaptureController.DoCapture(s));
-                            return (IntPtr)1; // swallow -> prevents the all-monitor capture
+                            if (Debounce("act:" + action))
+                                OnAction?.Invoke(action);
+                            return (IntPtr)1;
                         }
                     }
                 }
             }
             return CallNextHookEx(_hook, nCode, wParam, lParam);
         }
-
-        private static bool Matches(Hotkey? hk, uint vk)
-        {
-            if (hk == null || !hk.IsSet) return false;
-            if (vk != hk.Vk) return false;
-
-            bool ctrl = Down(VK_CONTROL);
-            bool alt = Down(VK_MENU);
-            bool shift = Down(VK_SHIFT);
-            bool win = Down(VK_LWIN) || Down(VK_RWIN);
-
-            return ctrl == hk.Ctrl && alt == hk.Alt && shift == hk.Shift && win == hk.Win;
-        }
-
-        private static bool Down(int vk) => (GetAsyncKeyState(vk) & 0x8000) != 0;
 
         public void Dispose() => Stop();
     }

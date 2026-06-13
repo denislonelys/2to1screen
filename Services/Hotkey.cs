@@ -1,98 +1,124 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Windows.Input;
 
 namespace TwoTo1Screen.Services
 {
-    /// <summary>
-    /// A serializable global hot-key: a main virtual key plus modifier flags
-    /// (Win / Ctrl / Alt / Shift). Used both for the capture key and for the
-    /// global enable/disable toggle.
-    /// </summary>
+    /// <summary>A keyboard shortcut: modifiers + a main virtual-key.</summary>
     public sealed class Hotkey
     {
-        public bool Win { get; set; }
-        public bool Ctrl { get; set; }
-        public bool Alt { get; set; }
-        public bool Shift { get; set; }
+        public bool Ctrl, Alt, Shift, Win;
+        public uint Vk;
 
-        /// <summary>Main virtual-key code. 0 means "not assigned".</summary>
-        public uint Vk { get; set; }
+        public bool IsEmpty => Vk == 0;
 
-        public Hotkey() { }
-
-        public Hotkey(uint vk, bool win = false, bool ctrl = false, bool alt = false, bool shift = false)
+        public static Hotkey FromKey(Key key, ModifierKeys mods)
         {
-            Vk = vk; Win = win; Ctrl = ctrl; Alt = alt; Shift = shift;
+            uint vk = (uint)KeyInterop.VirtualKeyFromKey(key);
+            return new Hotkey
+            {
+                Vk = vk,
+                Ctrl = mods.HasFlag(ModifierKeys.Control),
+                Alt = mods.HasFlag(ModifierKeys.Alt),
+                Shift = mods.HasFlag(ModifierKeys.Shift),
+                Win = mods.HasFlag(ModifierKeys.Windows),
+            };
         }
 
-        public bool IsSet => Vk != 0;
-
-        public Hotkey Clone() => new Hotkey(Vk, Win, Ctrl, Alt, Shift);
-
-        public static Hotkey PrintScreen() => new Hotkey(0x2C);
-
-        public bool ModifiersOnly =>
-            Vk == 0x10 || Vk == 0x11 || Vk == 0x12 ||           // shift / ctrl / alt
-            Vk == 0xA0 || Vk == 0xA1 || Vk == 0xA2 || Vk == 0xA3 || // l/r shift, l/r ctrl
-            Vk == 0xA4 || Vk == 0xA5 || Vk == 0x5B || Vk == 0x5C;   // l/r alt, l/r win
-
-        /// <summary>Human readable form, e.g. "Win + F12", "Print Screen", "—".</summary>
-        public string Display()
+        public override string ToString()
         {
-            if (!IsSet) return "—";
-            var parts = new List<string>(5);
-            if (Win) parts.Add("Win");
-            if (Ctrl) parts.Add("Ctrl");
-            if (Alt) parts.Add("Alt");
-            if (Shift) parts.Add("Shift");
-            parts.Add(KeyName(Vk));
-            return string.Join(" + ", parts);
+            if (Vk == 0) return "";
+            var sb = new StringBuilder();
+            if (Ctrl) sb.Append("Ctrl+");
+            if (Alt) sb.Append("Alt+");
+            if (Shift) sb.Append("Shift+");
+            if (Win) sb.Append("Win+");
+            sb.Append(KeyName(Vk));
+            return sb.ToString();
         }
 
-        public override string ToString() => Display();
+        public static Hotkey? Parse(string? s)
+        {
+            if (string.IsNullOrWhiteSpace(s)) return null;
+            var hk = new Hotkey();
+            var parts = s.Split('+');
+            foreach (var raw in parts)
+            {
+                var p = raw.Trim();
+                if (p.Equals("Ctrl", StringComparison.OrdinalIgnoreCase)) hk.Ctrl = true;
+                else if (p.Equals("Alt", StringComparison.OrdinalIgnoreCase)) hk.Alt = true;
+                else if (p.Equals("Shift", StringComparison.OrdinalIgnoreCase)) hk.Shift = true;
+                else if (p.Equals("Win", StringComparison.OrdinalIgnoreCase)) hk.Win = true;
+                else hk.Vk = VkFromName(p);
+            }
+            return hk.Vk == 0 ? null : hk;
+        }
 
         public static string KeyName(uint vk)
         {
-            switch (vk)
+            try
             {
-                case 0x2C: return "Print Screen";
-                case 0x20: return "Space";
-                case 0x0D: return "Enter";
-                case 0x09: return "Tab";
-                case 0x08: return "Backspace";
-                case 0x1B: return "Esc";
-                case 0x2D: return "Insert";
-                case 0x2E: return "Delete";
-                case 0x24: return "Home";
-                case 0x23: return "End";
-                case 0x21: return "Page Up";
-                case 0x22: return "Page Down";
-                case 0x25: return "←";
-                case 0x26: return "↑";
-                case 0x27: return "→";
-                case 0x28: return "↓";
-                case 0x13: return "Pause";
-                case 0x91: return "Scroll Lock";
-                case 0xBC: return ",";
-                case 0xBE: return ".";
-                case 0xBF: return "/";
-                case 0xBA: return ";";
-                case 0xDE: return "'";
-                case 0xDB: return "[";
-                case 0xDD: return "]";
-                case 0xDC: return "\\";
-                case 0xC0: return "`";
-                case 0xBD: return "-";
-                case 0xBB: return "=";
+                var key = KeyInterop.KeyFromVirtualKey((int)vk);
+                if (key != Key.None) return key.ToString();
             }
-
-            if (vk >= 0x30 && vk <= 0x39) return ((char)vk).ToString();            // 0-9
-            if (vk >= 0x41 && vk <= 0x5A) return ((char)vk).ToString();            // A-Z
-            if (vk >= 0x70 && vk <= 0x87) return "F" + (vk - 0x70 + 1);            // F1-F24
-            if (vk >= 0x60 && vk <= 0x69) return "Num " + (vk - 0x60);            // numpad 0-9
-
+            catch { }
             return "0x" + vk.ToString("X2");
+        }
+
+        private static uint VkFromName(string name)
+        {
+            if (name.StartsWith("0x", StringComparison.OrdinalIgnoreCase) &&
+                uint.TryParse(name.Substring(2), System.Globalization.NumberStyles.HexNumber, null, out var hv))
+                return hv;
+            if (Enum.TryParse<Key>(name, true, out var key))
+                return (uint)KeyInterop.VirtualKeyFromKey(key);
+            return 0;
+        }
+    }
+
+    /// <summary>
+    /// Registry of bindable actions. The UI lets the user middle-click any
+    /// bindable control to assign a global shortcut; the keyboard hook then
+    /// dispatches matching key presses to the action.
+    /// </summary>
+    public static class ActionRegistry
+    {
+        public sealed class Entry
+        {
+            public string Id = "";
+            public string Label = "";
+            public Action Run = () => { };
+        }
+
+        private static readonly Dictionary<string, Entry> _actions = new();
+
+        public static void Register(string id, string label, Action run)
+        {
+            _actions[id] = new Entry { Id = id, Label = label, Run = run };
+        }
+
+        public static string LabelOf(string id) => _actions.TryGetValue(id, out var e) ? e.Label : id;
+
+        public static void Invoke(string id)
+        {
+            if (_actions.TryGetValue(id, out var e))
+            {
+                try { e.Run(); } catch { }
+            }
+        }
+
+        /// <summary>Find the action whose bound hotkey exactly matches the current key event.</summary>
+        public static string? MatchAction(AppSettings s, uint vk, bool ctrl, bool alt, bool shift, bool win)
+        {
+            foreach (var kv in s.Hotkeys)
+            {
+                var hk = Hotkey.Parse(kv.Value);
+                if (hk == null) continue;
+                if (hk.Vk == vk && hk.Ctrl == ctrl && hk.Alt == alt && hk.Shift == shift && hk.Win == win)
+                    return kv.Key;
+            }
+            return null;
         }
     }
 }

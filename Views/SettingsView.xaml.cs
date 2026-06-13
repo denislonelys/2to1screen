@@ -17,20 +17,6 @@ namespace TwoTo1Screen.Views
         public SettingsView()
         {
             InitializeComponent();
-
-            HkCapture.AllowEmpty = false;
-            HkToggle.AllowEmpty = true;
-            HkCapture.ValueChanged += hk =>
-            {
-                if (!hk.IsSet) { hk = Hotkey.PrintScreen(); HkCapture.Value = hk; }
-                App.Settings.CaptureHotkey = hk;
-                App.Settings.Save();
-            };
-            HkToggle.ValueChanged += hk =>
-            {
-                App.Settings.ToggleHotkey = hk;
-                App.Settings.Save();
-            };
         }
 
         public void Bind(MainWindow host)
@@ -53,11 +39,10 @@ namespace TwoTo1Screen.Views
                 SwWinPs.IsChecked = App.Settings.InterceptWinPrintScreen;
                 SwSound.IsChecked = App.Settings.ShutterSound;
                 SwNotify.IsChecked = App.Settings.ShowNotification;
-
-                HkCapture.Value = (App.Settings.CaptureHotkey ?? Hotkey.PrintScreen()).Clone();
-                HkToggle.Value = (App.Settings.ToggleHotkey ?? new Hotkey()).Clone();
+                SwWinD.IsChecked = App.Settings.WinDSingleMonitor;
 
                 FolderText.Text = App.Settings.SaveFolder;
+                BuildHotkeyList();
             }
             finally
             {
@@ -208,9 +193,69 @@ namespace TwoTo1Screen.Views
             App.Settings.Save();
         }
 
-        private void BtnTestSound_Click(object sender, RoutedEventArgs e)
+        private void WinD_Click(object sender, RoutedEventArgs e)
         {
-            ShutterSound.Play();
+            if (_loading) return;
+            App.Settings.WinDSingleMonitor = SwWinD.IsChecked == true;
+            App.Settings.Save();
+        }
+
+        private static readonly (string Id, string Label)[] BindableActions = new[]
+        {
+            ("toggle_service", "Запустить / остановить перехват"),
+            ("capture_now", "Сделать скриншот сейчас"),
+            ("open_app", "Открыть окно 2to1screen"),
+            ("toggle_glass", "Вкл/выкл Liquid Glass"),
+        };
+
+        public void RefreshHotkeyHints() => BuildHotkeyList();
+
+        private void BuildHotkeyList()
+        {
+            if (HotkeyList == null) return;
+            HotkeyList.Children.Clear();
+            foreach (var (id, label) in BindableActions)
+            {
+                App.Settings.Hotkeys.TryGetValue(id, out var combo);
+
+                var card = new Border
+                {
+                    Style = (Style)FindResource("Card"),
+                    Padding = new Thickness(14, 12, 14, 12),
+                    Margin = new Thickness(0, 0, 0, 8),
+                };
+                BindHelper.SetAction(card, id);
+
+                var grid = new Grid();
+                grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+                grid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
+                grid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
+
+                var left = new StackPanel { VerticalAlignment = VerticalAlignment.Center };
+                left.Children.Add(new TextBlock { Text = label, Foreground = (Brush)FindResource("TextPrimary"), FontWeight = FontWeights.SemiBold, FontSize = 13.5 });
+                var hint = new TextBlock { Style = (Style)FindResource("Caption"), Margin = new Thickness(0, 3, 0, 0) };
+                hint.Text = string.IsNullOrEmpty(combo) ? "Не назначено" : "Клавиша: " + combo;
+                left.Children.Add(hint);
+                Grid.SetColumn(left, 0);
+
+                var change = new Button { Content = "Изменить", Style = (Style)FindResource("GlassButton"), VerticalAlignment = VerticalAlignment.Center };
+                change.Click += (_, __) => BindHelper.OpenBind(id, Window.GetWindow(this));
+                Grid.SetColumn(change, 1);
+
+                grid.Children.Add(left);
+                grid.Children.Add(change);
+
+                if (!string.IsNullOrEmpty(combo))
+                {
+                    var clear = new Button { Content = "Сброс", Style = (Style)FindResource("GlassButton"), VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(8, 0, 0, 0) };
+                    clear.Click += (_, __) => { App.Settings.Hotkeys.Remove(id); App.Settings.Save(); BuildHotkeyList(); };
+                    Grid.SetColumn(clear, 2);
+                    grid.Children.Add(clear);
+                }
+
+                card.Child = grid;
+                HotkeyList.Children.Add(card);
+            }
         }
 
         private void BtnFolder_Click(object sender, RoutedEventArgs e)

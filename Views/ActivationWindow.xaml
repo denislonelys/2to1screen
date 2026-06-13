@@ -1,0 +1,87 @@
+<Window x:Class="TwoTo1Screen.Views.ActivationWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Активация 2to1screen"
+        Width="460" Height="560"
+        WindowStartupLocation="CenterScreen"
+        WindowStyle="None" ResizeMode="NoResize"
+        AllowsTransparency="True" Background="Transparent"
+        ShowInTaskbar="True"
+        FontFamily="Segoe UI" TextOptions.TextFormattingMode="Ideal" UseLayoutRounding="True">
+
+    <Border x:Name="RootBorder" CornerRadius="20"
+            Background="{DynamicResource WindowFill}"
+            BorderBrush="{DynamicResource GlassStroke}" BorderThickness="1">
+        <Grid Margin="28,22,28,24">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+
+            <!-- header / drag -->
+            <Grid Grid.Row="0" MouseLeftButtonDown="Header_Drag">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <StackPanel Orientation="Horizontal">
+                    <Border Width="34" Height="34" CornerRadius="10"
+                            Background="{DynamicResource AccentGradient}" BorderBrush="#66FFFFFF" BorderThickness="1">
+                        <TextBlock Text="2›1" Foreground="{DynamicResource AccentForeground}" FontWeight="Bold" FontSize="13"
+                                   HorizontalAlignment="Center" VerticalAlignment="Center" />
+                    </Border>
+                    <TextBlock Text="2to1screen" Foreground="{DynamicResource TextPrimary}" FontSize="17"
+                               FontWeight="SemiBold" VerticalAlignment="Center" Margin="12,0,0,0" />
+                </StackPanel>
+                <Button Grid.Column="1" Style="{StaticResource CloseButton}" Content="&#xE8BB;" Click="Close_Click"
+                        FontFamily="Segoe MDL2 Assets" />
+            </Grid>
+
+            <!-- body -->
+            <StackPanel Grid.Row="1" Margin="0,22,0,0">
+                <TextBlock Text="Активируйте программу" Style="{StaticResource H1}" FontSize="22" />
+                <TextBlock Style="{StaticResource Body}" Margin="0,8,0,0"
+                           Text="Введите ключ активации. Без активации доступны только запуск и фоновый режим — настройки, темы и остальные функции заблокированы." />
+
+                <TextBlock Text="Ключ активации" Style="{StaticResource H2}" Margin="0,20,0,8" />
+                <Border CornerRadius="11" Background="{DynamicResource GlassFill}"
+                        BorderBrush="{DynamicResource GlassStroke}" BorderThickness="1" Padding="4">
+                    <TextBox x:Name="KeyBox" Background="Transparent" BorderThickness="0"
+                             Foreground="{DynamicResource TextPrimary}" CaretBrush="{DynamicResource TextPrimary}"
+                             FontSize="15" FontFamily="Consolas" Padding="10,8" MaxLength="32"
+                             CharacterCasing="Upper" />
+                </Border>
+
+                <Button x:Name="BtnActivate" Style="{StaticResource AccentButton}" Content="Активировать"
+                        Margin="0,14,0,0" HorizontalAlignment="Stretch" Click="Activate_Click" />
+
+                <Border Height="1" Background="{DynamicResource GlassStrokeSoft}" Margin="0,18" />
+
+                <Button x:Name="BtnTrial" Style="{StaticResource GlassButton}" Content="Попробовать бесплатно (2 дня)"
+                        HorizontalAlignment="Stretch" Padding="16,11" Click="Trial_Click" />
+                <TextBlock x:Name="TrialNote" Style="{StaticResource Caption}" Margin="2,8,0,0" TextWrapping="Wrap"
+                           Text="Пробный период работает 2 суток и привязывается к этому устройству." />
+
+                <TextBlock x:Name="StatusText" Style="{StaticResource Body}" Margin="0,14,0,0"
+                           Foreground="#FFE0A0A0" TextWrapping="Wrap" Visibility="Collapsed" />
+            </StackPanel>
+
+            <!-- footer -->
+            <StackPanel Grid.Row="2">
+                <TextBlock Style="{StaticResource Caption}" TextWrapping="Wrap"
+                           Text="Ключ можно получить у администратора в Telegram: @pvpya123" />
+                <Grid Margin="0,8,0,0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Grid.Column="0" Style="{StaticResource Caption}" Text="ID устройства: " VerticalAlignment="Center" />
+                    <TextBox x:Name="HwidBox" Grid.Column="1" IsReadOnly="True" Background="Transparent"
+                             BorderThickness="0" Foreground="{DynamicResource TextMuted}" FontFamily="Consolas"
+                             FontSize="11" VerticalAlignment="Center" />
+                </Grid>
+            </StackPanel>
+        </Grid>
+    </Border>
+</Window>

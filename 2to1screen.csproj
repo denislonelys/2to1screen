@@ -24,7 +24,10 @@
 
   <ItemGroup>
     <Resource Include="assets\app.ico" />
-    <Resource Include="assets\shutter.wav" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="System.Management" Version="8.0.0" />
   </ItemGroup>
 
 </Project>

@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -20,6 +21,23 @@ namespace TwoTo1Screen.Services
         Jpeg = 1
     }
 
+    /// <summary>A user-defined theme: "easy" (background image + accent) or "advanced" (full palette code).</summary>
+    public class CustomTheme
+    {
+        public string Id { get; set; } = Guid.NewGuid().ToString("N").Substring(0, 12);
+        public string Name { get; set; } = "Моя тема";
+        public string Type { get; set; } = "easy"; // easy | advanced
+        public string Mode { get; set; } = "dark";
+        public string Bg { get; set; } = "#14161B";
+        public string Bg2 { get; set; } = "#0F1116";
+        public string Surface { get; set; } = "#1C1F26";
+        public string Accent { get; set; } = "#CFE0F2";
+        public string Accent2 { get; set; } = "#9FB6D6";
+        public string Text { get; set; } = "#F2F5FA";
+        public string TextMuted { get; set; } = "#8893A2";
+        public string BgImageUrl { get; set; } = "";
+    }
+
     /// <summary>Persisted user settings (stored as JSON in %AppData%/2to1screen).</summary>
     public class AppSettings
     {
@@ -27,8 +45,8 @@ namespace TwoTo1Screen.Services
         public int MonitorIndex { get; set; } = 0;
 
         public QualityPreset Quality { get; set; } = QualityPreset.VeryHigh;
-        public int CustomWidth { get; set; } = 0;   // 0 => native width
-        public int CustomHeight { get; set; } = 0;  // 0 => native height
+        public int CustomWidth { get; set; } = 0;
+        public int CustomHeight { get; set; } = 0;
         public SaveFormat CustomFormat { get; set; } = SaveFormat.Png;
         public int CustomJpegQuality { get; set; } = 92;
 
@@ -40,20 +58,26 @@ namespace TwoTo1Screen.Services
         public bool ShutterSound { get; set; } = true;
         public bool ShowNotification { get; set; } = true;
 
-        public bool LiquidGlassDisabled { get; set; } = false;
+        // ---- Theme / Liquid Glass -------------------------------------------------
+        /// <summary>By default Liquid Glass is OFF and the standard black theme is used.</summary>
+        public bool LiquidGlassEnabled { get; set; } = false;
+
+        /// <summary>0 = непрозрачно, 100 = максимально прозрачно (видно обои).</summary>
+        public int GlassTransparency { get; set; } = 45;
+
+        /// <summary>Active theme id from the catalog/custom list. "builtin-black" is the default.</summary>
+        public string ActiveThemeId { get; set; } = "builtin-black";
+
+        public List<CustomTheme> CustomThemes { get; set; } = new List<CustomTheme>();
+
         public bool AutoStart { get; set; } = false;
 
-        // ---- Appearance (v1.1) ----
-        /// <summary>Primary accent color of the Liquid Glass theme (hex #RRGGBB).</summary>
-        public string LiquidGlassAccent { get; set; } = "#CFE0F2";
-        /// <summary>Selected store theme id, used when Liquid Glass is disabled.</summary>
-        public string ThemeId { get; set; } = "midnight";
+        // ---- Window behaviour -----------------------------------------------------
+        /// <summary>Win+D сворачивает окна только на одном мониторе (под курсором).</summary>
+        public bool WinDSingleMonitor { get; set; } = false;
 
-        // ---- Hotkeys (v1.1) ----
-        /// <summary>Key combination that triggers a single-monitor capture.</summary>
-        public Hotkey CaptureHotkey { get; set; } = Hotkey.PrintScreen();
-        /// <summary>Global key combination that pauses / resumes interception (works from tray).</summary>
-        public Hotkey ToggleHotkey { get; set; } = new Hotkey(0x2C, ctrl: true, alt: true); // Ctrl+Alt+PrtSc
+        // ---- Hotkeys (actionId -> combo string, e.g. "Ctrl+Alt+S") ----------------
+        public Dictionary<string, string> Hotkeys { get; set; } = new Dictionary<string, string>();
 
         [JsonIgnore]
         public static string Dir =>
@@ -102,15 +126,12 @@ namespace TwoTo1Screen.Services
             }
             if (CustomJpegQuality < 1 || CustomJpegQuality > 100)
                 CustomJpegQuality = 92;
-
-            if (CaptureHotkey == null || !CaptureHotkey.IsSet)
-                CaptureHotkey = Hotkey.PrintScreen();
-            if (ToggleHotkey == null)
-                ToggleHotkey = new Hotkey();
-            if (string.IsNullOrWhiteSpace(LiquidGlassAccent))
-                LiquidGlassAccent = "#CFE0F2";
-            if (string.IsNullOrWhiteSpace(ThemeId))
-                ThemeId = "midnight";
+            if (GlassTransparency < 0 || GlassTransparency > 100)
+                GlassTransparency = 45;
+            Hotkeys ??= new Dictionary<string, string>();
+            CustomThemes ??= new List<CustomTheme>();
+            if (string.IsNullOrWhiteSpace(ActiveThemeId))
+                ActiveThemeId = "builtin-black";
         }
 
         public void Save()

@@ -1,47 +1,29 @@
 using System;
-using System.Runtime.InteropServices;
-using System.Windows;
-using System.Windows.Interop;
 using static TwoTo1Screen.Services.Native;
 
 namespace TwoTo1Screen.Services
 {
-    /// <summary>Applies / removes the silver acrylic "Liquid Glass" backdrop and rounded corners.</summary>
+    /// <summary>Applies / removes the acrylic "Liquid Glass" backdrop and rounded corners.</summary>
     internal static class Glass
     {
-        // Silver tint in 0xAABBGGRR. A ~0x8C alpha gives a translucent silver wash
-        // that lets the wallpaper show through while still reading as glass.
-        public const uint SilverTint = 0x8CD8D2C8;
-
-        public static void Enable(Window window) => Enable(window, SilverTint);
-
-        public static void Enable(Window window, uint tint)
+        /// <summary>Enable acrylic blur-behind with the given tint (0xAABBGGRR).</summary>
+        public static void EnableAcrylic(IntPtr hwnd, uint tint)
         {
-            var hwnd = new WindowInteropHelper(window).Handle;
             if (hwnd == IntPtr.Zero) return;
-            Enable(hwnd, tint);
-            RoundCorners(hwnd);
-        }
-
-        public static void Enable(IntPtr hwnd) => Enable(hwnd, SilverTint);
-
-        public static void Enable(IntPtr hwnd, uint tint)
-        {
             ApplyAccent(hwnd, AccentStateEnum.ACCENT_ENABLE_ACRYLICBLURBEHIND, tint);
         }
 
-        public static void Disable(Window window)
+        public static void Disable(IntPtr hwnd)
         {
-            var hwnd = new WindowInteropHelper(window).Handle;
             if (hwnd == IntPtr.Zero) return;
             ApplyAccent(hwnd, AccentStateEnum.ACCENT_DISABLED, 0);
-            RoundCorners(hwnd);
         }
 
         public static void RoundCorners(IntPtr hwnd)
         {
             try
             {
+                if (hwnd == IntPtr.Zero) return;
                 int pref = DWMWCP_ROUND;
                 DwmSetWindowAttribute(hwnd, DWMWA_WINDOW_CORNER_PREFERENCE, ref pref, sizeof(int));
             }
@@ -58,11 +40,11 @@ namespace TwoTo1Screen.Services
                 AnimationId = 0
             };
 
-            int size = Marshal.SizeOf(accent);
-            IntPtr ptr = Marshal.AllocHGlobal(size);
+            int size = System.Runtime.InteropServices.Marshal.SizeOf(accent);
+            IntPtr ptr = System.Runtime.InteropServices.Marshal.AllocHGlobal(size);
             try
             {
-                Marshal.StructureToPtr(accent, ptr, false);
+                System.Runtime.InteropServices.Marshal.StructureToPtr(accent, ptr, false);
                 var data = new WindowCompositionAttributeData
                 {
                     Attribute = WCA_ACCENT_POLICY,
@@ -73,7 +55,7 @@ namespace TwoTo1Screen.Services
             }
             finally
             {
-                Marshal.FreeHGlobal(ptr);
+                System.Runtime.InteropServices.Marshal.FreeHGlobal(ptr);
             }
         }
     }

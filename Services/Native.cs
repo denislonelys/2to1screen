@@ -59,6 +59,8 @@ namespace TwoTo1Screen.Services
         internal const int VK_SHIFT = 0x10;
         internal const int VK_CONTROL = 0x11;
         internal const int VK_MENU = 0x12; // Alt
+        internal const int WM_KEYUP = 0x0101;
+        internal const int WM_SYSKEYUP = 0x0105;
 
         internal delegate IntPtr LowLevelKeyboardProc(int nCode, IntPtr wParam, IntPtr lParam);
 
@@ -145,5 +147,72 @@ namespace TwoTo1Screen.Services
         [DllImport("gdi32.dll")]
         [return: MarshalAs(UnmanagedType.Bool)]
         internal static extern bool DeleteObject(IntPtr hObject);
+
+        // ===================== Extra virtual keys =====================
+        internal const int VK_D = 0x44;
+
+        // ===================== Window styles / click-through overlay =====================
+        internal const int GWL_EXSTYLE = -20;
+        internal const long WS_EX_TRANSPARENT = 0x00000020;
+        internal const long WS_EX_LAYERED = 0x00080000;
+        internal const long WS_EX_TOOLWINDOW = 0x00000080;
+        internal const long WS_EX_NOACTIVATE = 0x08000000;
+
+        [DllImport("user32.dll", EntryPoint = "GetWindowLongPtrW", SetLastError = true)]
+        internal static extern IntPtr GetWindowLongPtr(IntPtr hWnd, int nIndex);
+
+        [DllImport("user32.dll", EntryPoint = "SetWindowLongPtrW", SetLastError = true)]
+        internal static extern IntPtr SetWindowLongPtr(IntPtr hWnd, int nIndex, IntPtr dwNewLong);
+
+        // ===================== Window enumeration / minimize =====================
+        [StructLayout(LayoutKind.Sequential)]
+        internal struct POINT { public int x; public int y; }
+
+        internal delegate bool EnumWindowsProc(IntPtr hWnd, IntPtr lParam);
+
+        [DllImport("user32.dll")]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        internal static extern bool EnumWindows(EnumWindowsProc lpEnumFunc, IntPtr lParam);
+
+        [DllImport("user32.dll")]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        internal static extern bool IsWindowVisible(IntPtr hWnd);
+
+        [DllImport("user32.dll")]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        internal static extern bool IsIconic(IntPtr hWnd);
+
+        [DllImport("user32.dll")]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        internal static extern bool ShowWindowAsync(IntPtr hWnd, int nCmdShow);
+
+        [DllImport("user32.dll")]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        internal static extern bool GetWindowRect(IntPtr hWnd, out RECT lpRect);
+
+        [DllImport("user32.dll")]
+        internal static extern IntPtr MonitorFromWindow(IntPtr hwnd, int dwFlags);
+
+        [DllImport("user32.dll")]
+        internal static extern IntPtr MonitorFromPoint(POINT pt, int dwFlags);
+
+        [DllImport("user32.dll")]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        internal static extern bool GetCursorPos(out POINT lpPoint);
+
+        [DllImport("user32.dll")]
+        internal static extern int GetWindowTextLength(IntPtr hWnd);
+
+        [DllImport("user32.dll")]
+        internal static extern IntPtr GetShellWindow();
+
+        [DllImport("user32.dll")]
+        internal static extern IntPtr GetAncestor(IntPtr hwnd, uint gaFlags);
+
+        internal const int SW_MINIMIZE = 6;
+        internal const int GWL_STYLE = -16;
+        internal const long WS_CHILD = 0x40000000L;
+        internal const uint GA_ROOTOWNER = 3;
+        internal const int MONITOR_DEFAULTTONEAREST = 2;
     }
 }

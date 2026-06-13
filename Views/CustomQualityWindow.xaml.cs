@@ -27,7 +27,7 @@ namespace TwoTo1Screen.Views
 
             SourceInitialized += (_, __) =>
             {
-                ThemeManager.ApplyWindowChrome(this, RootBorder, null);
+                ThemeService.ApplyWindowGlass(this, App.Settings);
             };
 
             // initial scale from saved width (relative to max)
