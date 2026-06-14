@@ -39,10 +39,11 @@ namespace TwoTo1Screen.Views
                 SwWinPs.IsChecked = App.Settings.InterceptWinPrintScreen;
                 SwSound.IsChecked = App.Settings.ShutterSound;
                 SwNotify.IsChecked = App.Settings.ShowNotification;
+                SwAnim.IsChecked = App.Settings.Animations;
                 SwWinD.IsChecked = App.Settings.WinDSingleMonitor;
 
                 FolderText.Text = App.Settings.SaveFolder;
-                BuildHotkeyList();
+                RefreshHotkeyHints();
             }
             finally
             {
@@ -190,6 +191,7 @@ namespace TwoTo1Screen.Views
             App.Settings.InterceptWinPrintScreen = SwWinPs.IsChecked == true;
             App.Settings.ShutterSound = SwSound.IsChecked == true;
             App.Settings.ShowNotification = SwNotify.IsChecked == true;
+            App.Settings.Animations = SwAnim.IsChecked == true;
             App.Settings.Save();
         }
 
@@ -200,62 +202,13 @@ namespace TwoTo1Screen.Views
             App.Settings.Save();
         }
 
-        private static readonly (string Id, string Label)[] BindableActions = new[]
+        public void RefreshHotkeyHints()
         {
-            ("toggle_service", "Запустить / остановить перехват"),
-            ("capture_now", "Сделать скриншот сейчас"),
-            ("open_app", "Открыть окно 2to1screen"),
-            ("toggle_glass", "Вкл/выкл Liquid Glass"),
-        };
-
-        public void RefreshHotkeyHints() => BuildHotkeyList();
-
-        private void BuildHotkeyList()
-        {
-            if (HotkeyList == null) return;
-            HotkeyList.Children.Clear();
-            foreach (var (id, label) in BindableActions)
-            {
-                App.Settings.Hotkeys.TryGetValue(id, out var combo);
-
-                var card = new Border
-                {
-                    Style = (Style)FindResource("Card"),
-                    Padding = new Thickness(14, 12, 14, 12),
-                    Margin = new Thickness(0, 0, 0, 8),
-                };
-                BindHelper.SetAction(card, id);
-
-                var grid = new Grid();
-                grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
-                grid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
-                grid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
-
-                var left = new StackPanel { VerticalAlignment = VerticalAlignment.Center };
-                left.Children.Add(new TextBlock { Text = label, Foreground = (Brush)FindResource("TextPrimary"), FontWeight = FontWeights.SemiBold, FontSize = 13.5 });
-                var hint = new TextBlock { Style = (Style)FindResource("Caption"), Margin = new Thickness(0, 3, 0, 0) };
-                hint.Text = string.IsNullOrEmpty(combo) ? "Не назначено" : "Клавиша: " + combo;
-                left.Children.Add(hint);
-                Grid.SetColumn(left, 0);
-
-                var change = new Button { Content = "Изменить", Style = (Style)FindResource("GlassButton"), VerticalAlignment = VerticalAlignment.Center };
-                change.Click += (_, __) => BindHelper.OpenBind(id, Window.GetWindow(this));
-                Grid.SetColumn(change, 1);
-
-                grid.Children.Add(left);
-                grid.Children.Add(change);
-
-                if (!string.IsNullOrEmpty(combo))
-                {
-                    var clear = new Button { Content = "Сброс", Style = (Style)FindResource("GlassButton"), VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(8, 0, 0, 0) };
-                    clear.Click += (_, __) => { App.Settings.Hotkeys.Remove(id); App.Settings.Save(); BuildHotkeyList(); };
-                    Grid.SetColumn(clear, 2);
-                    grid.Children.Add(clear);
-                }
-
-                card.Child = grid;
-                HotkeyList.Children.Add(card);
-            }
+            if (WinDHotkey == null) return;
+            App.Settings.Hotkeys.TryGetValue("minimize_monitor", out var combo);
+            WinDHotkey.Text = string.IsNullOrEmpty(combo)
+                ? "Клик колёсиком по строке — назначить свою горячую клавишу."
+                : $"Горячая клавиша: {combo}. Клик колёсиком по строке — изменить.";
         }
 
         private void BtnFolder_Click(object sender, RoutedEventArgs e)

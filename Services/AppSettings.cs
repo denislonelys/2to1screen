@@ -65,6 +65,18 @@ namespace TwoTo1Screen.Services
         /// <summary>0 = непрозрачно, 100 = максимально прозрачно (видно обои).</summary>
         public int GlassTransparency { get; set; } = 45;
 
+        /// <summary>Сила «баров»/карточек стекла: 0 = бары невидимы, 100 = стандарт. Применяется при включённом Liquid Glass.</summary>
+        public int GlassFillStrength { get; set; } = 100;
+
+        /// <summary>Override-цвет акцента для Liquid Glass (#RRGGBB). Пусто = брать из активной темы.</summary>
+        public string GlassAccentColor { get; set; } = "";
+
+        /// <summary>Override-цвет подложки (тинта) для Liquid Glass (#RRGGBB). Пусто = брать из активной темы.</summary>
+        public string GlassTintColor { get; set; } = "";
+
+        /// <summary>Плавные анимации интерфейса (нажатия, переходы вкладок, переключатели).</summary>
+        public bool Animations { get; set; } = true;
+
         /// <summary>Active theme id from the catalog/custom list. "builtin-black" is the default.</summary>
         public string ActiveThemeId { get; set; } = "builtin-black";
 
@@ -128,6 +140,8 @@ namespace TwoTo1Screen.Services
                 CustomJpegQuality = 92;
             if (GlassTransparency < 0 || GlassTransparency > 100)
                 GlassTransparency = 45;
+            if (GlassFillStrength < 0 || GlassFillStrength > 100)
+                GlassFillStrength = 100;
             Hotkeys ??= new Dictionary<string, string>();
             CustomThemes ??= new List<CustomTheme>();
             if (string.IsNullOrWhiteSpace(ActiveThemeId))

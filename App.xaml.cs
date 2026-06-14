@@ -134,6 +134,11 @@ namespace TwoTo1Screen
                 ApplyThemeEverywhere();
                 _main?.SyncThemeControls();
             });
+            ActionRegistry.Register("minimize_monitor", "Свернуть окна одного монитора", () =>
+            {
+                if (!LicenseBasic) return;
+                Task.Run(() => { try { WindowManager.MinimizeMonitorUnderCursor(); } catch { } });
+            });
         }
 
         // ---- theme ----

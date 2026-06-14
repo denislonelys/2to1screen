@@ -73,6 +73,8 @@
                                          Tag="⚙️" Content="Настройки" Checked="Nav_Checked" />
                             <RadioButton x:Name="NavThemes" Style="{StaticResource NavItem}" GroupName="Nav"
                                          Tag="🎨" Content="Темы" Checked="Nav_Checked" />
+                            <RadioButton x:Name="NavGlass" Style="{StaticResource NavItem}" GroupName="Nav"
+                                         Tag="💧" Content="Liquid Glass" Checked="Nav_Checked" />
                             <RadioButton x:Name="NavDev" Style="{StaticResource NavItem}" GroupName="Nav"
                                          Tag="👤" Content="Разработчик" Checked="Nav_Checked" />
                         </StackPanel>
@@ -89,6 +91,7 @@
                     <views:AppView x:Name="PageApp" />
                     <views:SettingsView x:Name="PageSettings" Visibility="Collapsed" />
                     <views:ThemesView x:Name="PageThemes" Visibility="Collapsed" />
+                    <views:LiquidGlassView x:Name="PageGlass" Visibility="Collapsed" />
                     <views:DeveloperView x:Name="PageDev" Visibility="Collapsed" />
                 </Grid>
             </Grid>

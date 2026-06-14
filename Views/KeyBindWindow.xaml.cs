@@ -1,5 +1,7 @@
+using System;
 using System.Windows;
 using System.Windows.Input;
+using System.Windows.Media.Animation;
 using TwoTo1Screen.Services;
 
 namespace TwoTo1Screen.Views
@@ -22,6 +24,39 @@ namespace TwoTo1Screen.Views
                 _captured = Hotkey.Parse(current);
             }
             SourceInitialized += (_, __) => ThemeService.ApplyWindowGlass(this, App.Settings);
+            Loaded += KeyBindWindow_Loaded;
+        }
+
+        private void KeyBindWindow_Loaded(object sender, RoutedEventArgs e)
+        {
+            // anchor the mini-menu near the top-centre of the owner window
+            var owner = Owner;
+            if (owner != null && owner.WindowState != WindowState.Minimized)
+            {
+                double ow = owner.ActualWidth > 0 ? owner.ActualWidth : owner.Width;
+                Left = owner.Left + (ow - ActualWidth) / 2;
+                Top = owner.Top + 62;
+            }
+            else
+            {
+                Left = (SystemParameters.PrimaryScreenWidth - ActualWidth) / 2;
+                Top = 80;
+            }
+
+            // gentle slide-down + fade entrance
+            if (App.Settings.Animations)
+            {
+                BeginAnimation(OpacityProperty, new DoubleAnimation(0, 1, TimeSpan.FromMilliseconds(140)));
+                EnterTransform.BeginAnimation(System.Windows.Media.TranslateTransform.YProperty,
+                    new DoubleAnimation(-14, 0, TimeSpan.FromMilliseconds(180))
+                    {
+                        EasingFunction = new CubicEase { EasingMode = EasingMode.EaseOut }
+                    });
+            }
+            else
+            {
+                EnterTransform.Y = 0;
+            }
         }
 
         protected override void OnPreviewKeyDown(KeyEventArgs e)

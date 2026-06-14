@@ -11,8 +11,8 @@ namespace TwoTo1Screen.Views
     public partial class ThemesView : UserControl
     {
         private MainWindow? _host;
-        private bool _loading;
         private List<ThemeVm> _all = new();
+        private const int Columns = 4;
 
         public ThemesView()
         {
@@ -27,18 +27,8 @@ namespace TwoTo1Screen.Views
 
         public void ReloadFromSettings()
         {
-            _loading = true;
-            try
-            {
-                SwGlass.IsChecked = App.Settings.LiquidGlassEnabled;
-                TransSlider.Value = App.Settings.GlassTransparency;
-                TransVal.Text = App.Settings.GlassTransparency + "%";
-                GlassOffNote.Visibility = App.Settings.LiquidGlassEnabled ? Visibility.Collapsed : Visibility.Visible;
-
-                BuildCatalog();
-                BuildCustom();
-            }
-            finally { _loading = false; }
+            BuildCatalog();
+            BuildCustom();
         }
 
         private void BuildCatalog()
@@ -46,6 +36,9 @@ namespace TwoTo1Screen.Views
             _all = new List<ThemeVm> { new ThemeVm(ThemeService.BuiltinBlack) };
             foreach (var p in ThemeService.Catalog)
                 _all.Add(new ThemeVm(p));
+
+            string active = App.Settings.ActiveThemeId ?? "builtin-black";
+            foreach (var vm in _all) vm.IsActive = vm.Id == active;
 
             StoreTitle.Text = $"Магазин тем ({_all.Count})";
             ApplyFilter(SearchBox.Text);
@@ -60,11 +53,15 @@ namespace TwoTo1Screen.Views
                 items = _all.Where(t => t.Name.ToLowerInvariant().Contains(s) ||
                                         (t.Author ?? "").ToLowerInvariant().Contains(s));
             }
-            var list = items.ToList();
-            _loading = true;
-            ThemeList.ItemsSource = list;
-            ThemeList.SelectedItem = list.FirstOrDefault(t => t.Id == App.Settings.ActiveThemeId);
-            _loading = false;
+            ThemeList.ItemsSource = Chunk(items.ToList(), Columns);
+        }
+
+        private static List<List<ThemeVm>> Chunk(List<ThemeVm> src, int size)
+        {
+            var rows = new List<List<ThemeVm>>();
+            for (int i = 0; i < src.Count; i += size)
+                rows.Add(src.GetRange(i, Math.Min(size, src.Count - i)));
+            return rows;
         }
 
         private void BuildCustom()
@@ -83,14 +80,15 @@ namespace TwoTo1Screen.Views
 
             var preview = new Border
             {
-                Width = 150, Height = 52, CornerRadius = new CornerRadius(8),
-                Background = vm.BgBrush, Margin = new Thickness(0, 0, 0, 6),
+                Width = 150, Height = 60, CornerRadius = new CornerRadius(8),
+                Background = vm.BgBrush, Margin = new Thickness(0, 0, 0, 8),
+                ClipToBounds = true,
             };
             var pg = new Grid();
-            pg.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(34) });
+            pg.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(28) });
             pg.ColumnDefinitions.Add(new ColumnDefinition());
             pg.Children.Add(new Border { Background = vm.SurfaceBrush, CornerRadius = new CornerRadius(8, 0, 0, 8) });
-            var pill = new Border { Height = 7, Width = 50, CornerRadius = new CornerRadius(4), Background = vm.AccentBrush, HorizontalAlignment = HorizontalAlignment.Left, Margin = new Thickness(10, 12, 0, 0) };
+            var pill = new Border { Height = 8, Width = 52, CornerRadius = new CornerRadius(4), Background = vm.AccentBrush, HorizontalAlignment = HorizontalAlignment.Left, Margin = new Thickness(10, 14, 0, 0) };
             Grid.SetColumn(pill, 1); pg.Children.Add(pill);
             preview.Child = pg;
 
@@ -105,7 +103,7 @@ namespace TwoTo1Screen.Views
 
             var card = new Border
             {
-                CornerRadius = new CornerRadius(12), Padding = new Thickness(10),
+                CornerRadius = new CornerRadius(14), Padding = new Thickness(10),
                 Margin = new Thickness(0, 0, 10, 10),
                 Background = (Brush)FindResource("GlassFill"),
                 BorderBrush = active ? (Brush)FindResource("AccentSolid") : (Brush)FindResource("GlassStrokeSoft"),
@@ -122,39 +120,21 @@ namespace TwoTo1Screen.Views
             App.Settings.ActiveThemeId = id;
             App.Settings.Save();
             App.Current.ApplyThemeEverywhere();
-            // refresh highlight states without rebuilding catalog scroll position
+            // flip active highlight without rebuilding (preserves scroll position)
+            foreach (var vm in _all) vm.IsActive = vm.Id == id;
             BuildCustom();
         }
 
-        private void ThemeList_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        private void Tile_Click(object sender, System.Windows.Input.MouseButtonEventArgs e)
         {
-            if (_loading) return;
-            if (ThemeList.SelectedItem is ThemeVm vm)
+            if (sender is FrameworkElement fe && fe.DataContext is ThemeVm vm)
                 ApplyTheme(vm.Id);
         }
 
         private void SearchBox_TextChanged(object sender, TextChangedEventArgs e)
         {
-            if (_loading) return;
+            SearchHint.Visibility = string.IsNullOrEmpty(SearchBox.Text) ? Visibility.Visible : Visibility.Collapsed;
             ApplyFilter(SearchBox.Text);
-        }
-
-        private void SwGlass_Click(object sender, RoutedEventArgs e)
-        {
-            if (_loading) return;
-            App.Settings.LiquidGlassEnabled = SwGlass.IsChecked == true;
-            App.Settings.Save();
-            GlassOffNote.Visibility = App.Settings.LiquidGlassEnabled ? Visibility.Collapsed : Visibility.Visible;
-            App.Current.ApplyThemeEverywhere();
-        }
-
-        private void TransSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
-        {
-            if (_loading) return;
-            App.Settings.GlassTransparency = (int)Math.Round(e.NewValue);
-            TransVal.Text = App.Settings.GlassTransparency + "%";
-            App.Settings.Save();
-            App.Current.ApplyThemeEverywhere();
         }
 
         private void NewEasy_Click(object sender, RoutedEventArgs e) => OpenEditor("easy");

@@ -3,6 +3,7 @@ using System.ComponentModel;
 using System.Windows;
 using System.Windows.Input;
 using System.Windows.Media;
+using System.Windows.Media.Animation;
 using TwoTo1Screen.Services;
 using TwoTo1Screen.Views;
 
@@ -24,6 +25,7 @@ namespace TwoTo1Screen
                 PageApp.Bind(this);
                 PageSettings.Bind(this);
                 PageThemes.Bind(this);
+                PageGlass.Bind(this);
                 RefreshRunningState();
                 RefreshLicenseUi();
             };
@@ -46,6 +48,7 @@ namespace TwoTo1Screen
         public void SyncThemeControls()
         {
             PageThemes.ReloadFromSettings();
+            PageGlass.ReloadFromSettings();
             PageApp.RefreshRunningState();
         }
 
@@ -67,9 +70,10 @@ namespace TwoTo1Screen
             LicenseBadge.Background = new SolidColorBrush(Color.FromArgb(0x33, color.R, color.G, color.B));
 
             bool full = App.Current.LicenseFull;
-            // gate Settings & Themes behind a valid licence
+            // gate Settings, Themes & Liquid Glass behind a valid licence
             NavSettings.Opacity = full ? 1.0 : 0.55;
             NavThemes.Opacity = full ? 1.0 : 0.55;
+            NavGlass.Opacity = full ? 1.0 : 0.55;
         }
 
         public void RefreshRunningState()
@@ -84,11 +88,11 @@ namespace TwoTo1Screen
 
         private void Nav_Checked(object sender, RoutedEventArgs e)
         {
-            if (PageApp == null || PageSettings == null || PageThemes == null || PageDev == null)
+            if (PageApp == null || PageSettings == null || PageThemes == null || PageGlass == null || PageDev == null)
                 return;
 
-            // gating: Settings & Themes require a full licence
-            if ((NavSettings.IsChecked == true || NavThemes.IsChecked == true) && !App.Current.LicenseFull)
+            // gating: Settings, Themes & Liquid Glass require a full licence
+            if ((NavSettings.IsChecked == true || NavThemes.IsChecked == true || NavGlass.IsChecked == true) && !App.Current.LicenseFull)
             {
                 System.Windows.MessageBox.Show(
                     "Этот раздел доступен только после активации программы по ключу.\n\n" +
@@ -101,10 +105,45 @@ namespace TwoTo1Screen
             PageApp.Visibility = NavApp.IsChecked == true ? Visibility.Visible : Visibility.Collapsed;
             PageSettings.Visibility = NavSettings.IsChecked == true ? Visibility.Visible : Visibility.Collapsed;
             PageThemes.Visibility = NavThemes.IsChecked == true ? Visibility.Visible : Visibility.Collapsed;
+            PageGlass.Visibility = NavGlass.IsChecked == true ? Visibility.Visible : Visibility.Collapsed;
             PageDev.Visibility = NavDev.IsChecked == true ? Visibility.Visible : Visibility.Collapsed;
 
             if (NavSettings.IsChecked == true) PageSettings.ReloadFromSettings();
             if (NavThemes.IsChecked == true) PageThemes.ReloadFromSettings();
+            if (NavGlass.IsChecked == true) PageGlass.ReloadFromSettings();
+
+            FrameworkElement? active =
+                NavApp.IsChecked == true ? PageApp :
+                NavSettings.IsChecked == true ? (FrameworkElement)PageSettings :
+                NavThemes.IsChecked == true ? PageThemes :
+                NavGlass.IsChecked == true ? PageGlass :
+                NavDev.IsChecked == true ? PageDev : null;
+            AnimatePage(active);
+        }
+
+        /// <summary>Subtle, GPU-friendly fade + slide-in when switching tabs.</summary>
+        private void AnimatePage(FrameworkElement? page)
+        {
+            if (page == null) return;
+            if (!App.Settings.Animations) { page.Opacity = 1; return; }
+
+            var tt = page.RenderTransform as TranslateTransform;
+            if (tt == null)
+            {
+                tt = new TranslateTransform();
+                page.RenderTransform = tt;
+            }
+
+            var fade = new DoubleAnimation(0, 1, TimeSpan.FromMilliseconds(180))
+            {
+                EasingFunction = new CubicEase { EasingMode = EasingMode.EaseOut }
+            };
+            var slide = new DoubleAnimation(10, 0, TimeSpan.FromMilliseconds(220))
+            {
+                EasingFunction = new CubicEase { EasingMode = EasingMode.EaseOut }
+            };
+            page.BeginAnimation(OpacityProperty, fade);
+            tt.BeginAnimation(TranslateTransform.YProperty, slide);
         }
 
         private void TitleBar_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)

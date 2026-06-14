@@ -2,41 +2,55 @@
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="Горячая клавиша"
-        Width="380" Height="250"
-        WindowStartupLocation="CenterOwner"
+        Width="380" SizeToContent="Height"
+        WindowStartupLocation="Manual"
         WindowStyle="None" ResizeMode="NoResize"
         AllowsTransparency="True" Background="Transparent"
         ShowInTaskbar="False" Topmost="True"
         FontFamily="Segoe UI" TextOptions.TextFormattingMode="Ideal" UseLayoutRounding="True">
 
-    <Border CornerRadius="18" Background="{DynamicResource WindowFill}"
-            BorderBrush="{DynamicResource GlassStroke}" BorderThickness="1">
-        <Grid Margin="24,20,24,20">
-            <Grid.RowDefinitions>
-                <RowDefinition Height="Auto" />
-                <RowDefinition Height="*" />
-                <RowDefinition Height="Auto" />
-            </Grid.RowDefinitions>
+    <Grid Margin="0,0,0,16">
+        <Grid.RenderTransform>
+            <TranslateTransform x:Name="EnterTransform" Y="-14" />
+        </Grid.RenderTransform>
 
-            <StackPanel Grid.Row="0">
-                <TextBlock Text="Назначить горячую клавишу" Style="{StaticResource H2}" FontSize="16" />
-                <TextBlock x:Name="ActionLabel" Style="{StaticResource Caption}" Margin="0,4,0,0" />
-            </StackPanel>
+        <!-- little pointer to look like a drop-down mini menu -->
+        <Path Data="M 0,10 L 10,0 L 20,10 Z" Fill="{DynamicResource WindowFill}"
+              Stroke="{DynamicResource GlassStroke}" StrokeThickness="1"
+              HorizontalAlignment="Center" VerticalAlignment="Top" Margin="0,0,0,-1" Panel.ZIndex="1" />
 
-            <Border Grid.Row="1" CornerRadius="12" Background="{DynamicResource GlassFill}"
-                    BorderBrush="{DynamicResource GlassStroke}" BorderThickness="1" Margin="0,16"
-                    VerticalAlignment="Center">
-                <TextBlock x:Name="ComboText" Text="Нажмите сочетание клавиш…"
-                           Foreground="{DynamicResource TextPrimary}" FontSize="18" FontWeight="SemiBold"
-                           HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0,22" />
-            </Border>
+        <Border CornerRadius="16" Background="{DynamicResource WindowFill}"
+                BorderBrush="{DynamicResource GlassStroke}" BorderThickness="1" Margin="0,9,0,0">
+            <Border.Effect>
+                <DropShadowEffect Color="#000000" BlurRadius="22" ShadowDepth="4" Opacity="0.45" />
+            </Border.Effect>
+            <Grid Margin="20,16,20,16">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
 
-            <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right">
-                <Button Content="Очистить" Style="{StaticResource GlassButton}" MinWidth="84" Click="Clear_Click" />
-                <Button Content="Отмена" Style="{StaticResource GlassButton}" MinWidth="84" Margin="8,0,0,0" Click="Cancel_Click" />
-                <Button x:Name="BtnSave" Content="Сохранить" Style="{StaticResource AccentButton}" MinWidth="100"
-                        Padding="18,9" FontSize="13" Margin="8,0,0,0" Click="Save_Click" />
-            </StackPanel>
-        </Grid>
-    </Border>
+                <StackPanel Grid.Row="0">
+                    <TextBlock Text="Горячая клавиша" Style="{StaticResource H2}" FontSize="15" />
+                    <TextBlock x:Name="ActionLabel" Style="{StaticResource Caption}" Margin="0,3,0,0" />
+                </StackPanel>
+
+                <Border Grid.Row="1" CornerRadius="11" Background="{DynamicResource GlassFill}"
+                        BorderBrush="{DynamicResource GlassStroke}" BorderThickness="1" Margin="0,12"
+                        VerticalAlignment="Center">
+                    <TextBlock x:Name="ComboText" Text="Нажмите сочетание клавиш…"
+                               Foreground="{DynamicResource TextPrimary}" FontSize="17" FontWeight="SemiBold"
+                               HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0,16" />
+                </Border>
+
+                <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right">
+                    <Button Content="Очистить" Style="{StaticResource GlassButton}" MinWidth="78" Padding="12,7" FontSize="12" Click="Clear_Click" />
+                    <Button Content="Отмена" Style="{StaticResource GlassButton}" MinWidth="78" Padding="12,7" FontSize="12" Margin="8,0,0,0" Click="Cancel_Click" />
+                    <Button x:Name="BtnSave" Content="Сохранить" Style="{StaticResource AccentButton}" MinWidth="92"
+                            Padding="14,7" FontSize="12.5" Margin="8,0,0,0" Click="Save_Click" />
+                </StackPanel>
+            </Grid>
+        </Border>
+    </Grid>
 </Window>

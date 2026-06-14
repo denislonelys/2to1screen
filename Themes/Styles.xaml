@@ -88,19 +88,53 @@
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="Button">
-                    <Border x:Name="bd" CornerRadius="11"
-                            Background="{DynamicResource GlassFill}"
-                            BorderBrush="{DynamicResource GlassStroke}"
-                            BorderThickness="1"
-                            Padding="{TemplateBinding Padding}">
-                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
-                    </Border>
+                    <Grid RenderTransformOrigin="0.5,0.5">
+                        <Grid.RenderTransform>
+                            <ScaleTransform x:Name="st" ScaleX="1" ScaleY="1" />
+                        </Grid.RenderTransform>
+                        <Border x:Name="bd" CornerRadius="11"
+                                Background="{DynamicResource GlassFill}"
+                                BorderBrush="{DynamicResource GlassStroke}"
+                                BorderThickness="1" />
+                        <Border x:Name="hover" CornerRadius="11" Background="{DynamicResource GlassFillHover}" Opacity="0" />
+                        <Border Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        </Border>
+                    </Grid>
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsMouseOver" Value="True">
-                            <Setter TargetName="bd" Property="Background" Value="{DynamicResource GlassFillHover}" />
+                            <Trigger.EnterActions>
+                                <BeginStoryboard>
+                                    <Storyboard>
+                                        <DoubleAnimation Storyboard.TargetName="hover" Storyboard.TargetProperty="Opacity" To="1" Duration="0:0:0.12" />
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </Trigger.EnterActions>
+                            <Trigger.ExitActions>
+                                <BeginStoryboard>
+                                    <Storyboard>
+                                        <DoubleAnimation Storyboard.TargetName="hover" Storyboard.TargetProperty="Opacity" To="0" Duration="0:0:0.16" />
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </Trigger.ExitActions>
                         </Trigger>
                         <Trigger Property="IsPressed" Value="True">
-                            <Setter TargetName="bd" Property="Background" Value="{DynamicResource GlassStrokeSoft}" />
+                            <Trigger.EnterActions>
+                                <BeginStoryboard>
+                                    <Storyboard>
+                                        <DoubleAnimation Storyboard.TargetName="st" Storyboard.TargetProperty="ScaleX" To="0.96" Duration="0:0:0.08" />
+                                        <DoubleAnimation Storyboard.TargetName="st" Storyboard.TargetProperty="ScaleY" To="0.96" Duration="0:0:0.08" />
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </Trigger.EnterActions>
+                            <Trigger.ExitActions>
+                                <BeginStoryboard>
+                                    <Storyboard>
+                                        <DoubleAnimation Storyboard.TargetName="st" Storyboard.TargetProperty="ScaleX" To="1" Duration="0:0:0.14" />
+                                        <DoubleAnimation Storyboard.TargetName="st" Storyboard.TargetProperty="ScaleY" To="1" Duration="0:0:0.14" />
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </Trigger.ExitActions>
                         </Trigger>
                         <Trigger Property="IsEnabled" Value="False">
                             <Setter Property="Opacity" Value="0.45" />
@@ -123,7 +157,10 @@
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="Button">
-                    <Grid>
+                    <Grid RenderTransformOrigin="0.5,0.5">
+                        <Grid.RenderTransform>
+                            <ScaleTransform x:Name="st" ScaleX="1" ScaleY="1" />
+                        </Grid.RenderTransform>
                         <Border x:Name="bd" CornerRadius="14"
                                 Background="{TemplateBinding Background}"
                                 BorderBrush="#66FFFFFF" BorderThickness="1">
@@ -131,6 +168,7 @@
                                 <DropShadowEffect Color="#80000000" BlurRadius="14" ShadowDepth="0" Opacity="0.35" />
                             </Border.Effect>
                         </Border>
+                        <Border x:Name="hoverLayer" CornerRadius="14" Background="#FFFFFFFF" Opacity="0" />
                         <Border x:Name="overlay" CornerRadius="14" Background="Transparent"
                                 Padding="{TemplateBinding Padding}">
                             <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
@@ -138,10 +176,39 @@
                     </Grid>
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsMouseOver" Value="True">
-                            <Setter TargetName="overlay" Property="Background" Value="#26FFFFFF" />
+                            <Trigger.EnterActions>
+                                <BeginStoryboard>
+                                    <Storyboard>
+                                        <DoubleAnimation Storyboard.TargetName="hoverLayer" Storyboard.TargetProperty="Opacity" To="0.16" Duration="0:0:0.12" />
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </Trigger.EnterActions>
+                            <Trigger.ExitActions>
+                                <BeginStoryboard>
+                                    <Storyboard>
+                                        <DoubleAnimation Storyboard.TargetName="hoverLayer" Storyboard.TargetProperty="Opacity" To="0" Duration="0:0:0.16" />
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </Trigger.ExitActions>
                         </Trigger>
                         <Trigger Property="IsPressed" Value="True">
                             <Setter TargetName="overlay" Property="Background" Value="#22000000" />
+                            <Trigger.EnterActions>
+                                <BeginStoryboard>
+                                    <Storyboard>
+                                        <DoubleAnimation Storyboard.TargetName="st" Storyboard.TargetProperty="ScaleX" To="0.97" Duration="0:0:0.08" />
+                                        <DoubleAnimation Storyboard.TargetName="st" Storyboard.TargetProperty="ScaleY" To="0.97" Duration="0:0:0.08" />
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </Trigger.EnterActions>
+                            <Trigger.ExitActions>
+                                <BeginStoryboard>
+                                    <Storyboard>
+                                        <DoubleAnimation Storyboard.TargetName="st" Storyboard.TargetProperty="ScaleX" To="1" Duration="0:0:0.15" />
+                                        <DoubleAnimation Storyboard.TargetName="st" Storyboard.TargetProperty="ScaleY" To="1" Duration="0:0:0.15" />
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </Trigger.ExitActions>
                         </Trigger>
                         <Trigger Property="IsEnabled" Value="False">
                             <Setter Property="Opacity" Value="0.5" />
@@ -206,22 +273,56 @@
                 <ControlTemplate TargetType="RadioButton">
                     <Border x:Name="bd" CornerRadius="14" Background="Transparent"
                             BorderBrush="Transparent" BorderThickness="1" Padding="0,12">
-                        <StackPanel HorizontalAlignment="Center">
-                            <TextBlock x:Name="emoji" Text="{TemplateBinding Tag}"
-                                       FontSize="22" HorizontalAlignment="Center"
-                                       TextOptions.TextFormattingMode="Ideal" />
-                            <ContentPresenter x:Name="label" HorizontalAlignment="Center" Margin="0,5,0,0" />
-                        </StackPanel>
+                        <Border.RenderTransform>
+                            <TranslateTransform x:Name="navtt" Y="0" />
+                        </Border.RenderTransform>
+                        <Grid>
+                            <Border x:Name="hoverbg" CornerRadius="14" Background="#FFFFFFFF" Opacity="0" />
+                            <Border x:Name="selbg" CornerRadius="14" Opacity="0"
+                                    Background="{DynamicResource GlassFillHover}"
+                                    BorderBrush="{DynamicResource GlassStroke}" BorderThickness="1" />
+                            <StackPanel HorizontalAlignment="Center">
+                                <TextBlock x:Name="emoji" Text="{TemplateBinding Tag}"
+                                           FontSize="22" HorizontalAlignment="Center"
+                                           TextOptions.TextFormattingMode="Ideal" />
+                                <ContentPresenter x:Name="label" HorizontalAlignment="Center" Margin="0,5,0,0" />
+                            </StackPanel>
+                        </Grid>
                     </Border>
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsMouseOver" Value="True">
-                            <Setter TargetName="bd" Property="Background" Value="#22FFFFFF" />
                             <Setter Property="Foreground" Value="{DynamicResource TextPrimary}" />
+                            <Trigger.EnterActions>
+                                <BeginStoryboard>
+                                    <Storyboard>
+                                        <DoubleAnimation Storyboard.TargetName="hoverbg" Storyboard.TargetProperty="Opacity" To="0.10" Duration="0:0:0.12" />
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </Trigger.EnterActions>
+                            <Trigger.ExitActions>
+                                <BeginStoryboard>
+                                    <Storyboard>
+                                        <DoubleAnimation Storyboard.TargetName="hoverbg" Storyboard.TargetProperty="Opacity" To="0" Duration="0:0:0.16" />
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </Trigger.ExitActions>
                         </Trigger>
                         <Trigger Property="IsChecked" Value="True">
-                            <Setter TargetName="bd" Property="Background" Value="{DynamicResource GlassFillHover}" />
-                            <Setter TargetName="bd" Property="BorderBrush" Value="{DynamicResource GlassStroke}" />
                             <Setter Property="Foreground" Value="{DynamicResource TextPrimary}" />
+                            <Trigger.EnterActions>
+                                <BeginStoryboard>
+                                    <Storyboard>
+                                        <DoubleAnimation Storyboard.TargetName="selbg" Storyboard.TargetProperty="Opacity" To="1" Duration="0:0:0.18" />
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </Trigger.EnterActions>
+                            <Trigger.ExitActions>
+                                <BeginStoryboard>
+                                    <Storyboard>
+                                        <DoubleAnimation Storyboard.TargetName="selbg" Storyboard.TargetProperty="Opacity" To="0" Duration="0:0:0.18" />
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </Trigger.ExitActions>
                         </Trigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>
@@ -311,8 +412,17 @@
                         <Border x:Name="track" CornerRadius="14"
                                 Background="{DynamicResource SwitchOff}"
                                 BorderBrush="{DynamicResource GlassStroke}" BorderThickness="1" />
+                        <Border x:Name="trackOn" CornerRadius="14" Opacity="0"
+                                Background="{DynamicResource AccentSolid}"
+                                BorderBrush="#88FFFFFF" BorderThickness="1" />
                         <Border x:Name="thumb" Width="20" Height="20" CornerRadius="10"
-                                Background="#FFF2F5F9" HorizontalAlignment="Left" Margin="4,0,0,0">
+                                HorizontalAlignment="Left" Margin="4,0,0,0" RenderTransformOrigin="0.5,0.5">
+                            <Border.Background>
+                                <SolidColorBrush x:Name="thumbBrush" Color="#FFF2F5F9" />
+                            </Border.Background>
+                            <Border.RenderTransform>
+                                <TranslateTransform x:Name="tt" X="0" />
+                            </Border.RenderTransform>
                             <Border.Effect>
                                 <DropShadowEffect Color="#000000" BlurRadius="6" ShadowDepth="0" Opacity="0.35" />
                             </Border.Effect>
@@ -320,11 +430,32 @@
                     </Grid>
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsChecked" Value="True">
-                            <Setter TargetName="track" Property="Background" Value="{DynamicResource AccentSolid}" />
-                            <Setter TargetName="track" Property="BorderBrush" Value="#88FFFFFF" />
-                            <Setter TargetName="thumb" Property="HorizontalAlignment" Value="Right" />
-                            <Setter TargetName="thumb" Property="Margin" Value="0,0,4,0" />
-                            <Setter TargetName="thumb" Property="Background" Value="#FF1B2530" />
+                            <Trigger.EnterActions>
+                                <BeginStoryboard>
+                                    <Storyboard>
+                                        <DoubleAnimation Storyboard.TargetName="tt" Storyboard.TargetProperty="X" To="20" Duration="0:0:0.17">
+                                            <DoubleAnimation.EasingFunction>
+                                                <CubicEase EasingMode="EaseOut" />
+                                            </DoubleAnimation.EasingFunction>
+                                        </DoubleAnimation>
+                                        <DoubleAnimation Storyboard.TargetName="trackOn" Storyboard.TargetProperty="Opacity" To="1" Duration="0:0:0.17" />
+                                        <ColorAnimation Storyboard.TargetName="thumbBrush" Storyboard.TargetProperty="Color" To="#FF1B2530" Duration="0:0:0.17" />
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </Trigger.EnterActions>
+                            <Trigger.ExitActions>
+                                <BeginStoryboard>
+                                    <Storyboard>
+                                        <DoubleAnimation Storyboard.TargetName="tt" Storyboard.TargetProperty="X" To="0" Duration="0:0:0.17">
+                                            <DoubleAnimation.EasingFunction>
+                                                <CubicEase EasingMode="EaseOut" />
+                                            </DoubleAnimation.EasingFunction>
+                                        </DoubleAnimation>
+                                        <DoubleAnimation Storyboard.TargetName="trackOn" Storyboard.TargetProperty="Opacity" To="0" Duration="0:0:0.17" />
+                                        <ColorAnimation Storyboard.TargetName="thumbBrush" Storyboard.TargetProperty="Color" To="#FFF2F5F9" Duration="0:0:0.17" />
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </Trigger.ExitActions>
                         </Trigger>
                         <Trigger Property="IsMouseOver" Value="True">
                             <Setter TargetName="track" Property="BorderBrush" Value="#AAFFFFFF" />

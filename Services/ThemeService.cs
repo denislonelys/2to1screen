@@ -71,14 +71,18 @@ namespace TwoTo1Screen.Services
             var p = Resolve(s);
             bool glass = s.LiquidGlassEnabled;
             int t = Math.Clamp(s.GlassTransparency, 0, 100);
+            // bars/cards strength (only meaningful with Liquid Glass on)
+            double fill = glass ? Math.Clamp(s.GlassFillStrength, 0, 100) / 100.0 : 1.0;
 
             var res = Application.Current.Resources;
 
-            Color bg = Hex(p.Bg, Color.FromRgb(0x15, 0x18, 0x1D));
+            Color bg = EffectiveTint(s, p);
             Color bg2 = Hex(p.Bg2, Darken(bg, 0.04));
             Color surface = Hex(p.Surface, Lighten(bg, 0.06));
-            Color accent = Hex(p.Accent, Color.FromRgb(0xCF, 0xE0, 0xF2));
+            Color accent = EffectiveAccent(s, p);
             Color accent2 = Hex(p.Accent2, Darken(accent, 0.10));
+            // when the accent is overridden for glass, derive the secondary stop from it
+            if (glass && !string.IsNullOrWhiteSpace(s.GlassAccentColor)) accent2 = Darken(accent, 0.12);
             Color text = Hex(p.Text, Colors.White);
             Color muted = Hex(p.TextMuted, Color.FromRgb(0x88, 0x93, 0xA2));
             bool dark = p.IsDark;
@@ -96,13 +100,13 @@ namespace TwoTo1Screen.Services
             res["AccentForeground"] = new SolidColorBrush(Luminance(accent) > 0.6 ? Color.FromRgb(0x16, 0x20, 0x2B) : Colors.White);
             res["RunningGradient"] = VGrad(Color.FromRgb(0x8B, 0xE6, 0xB4), Color.FromRgb(0x49, 0xB9, 0x87));
 
-            res["GlassStroke"] = new SolidColorBrush(WithA(ov, 0x55));
-            res["GlassStrokeSoft"] = new SolidColorBrush(WithA(ov, 0x2E));
-            res["SwitchOff"] = new SolidColorBrush(WithA(ov, 0x3A));
+            res["GlassStroke"] = new SolidColorBrush(WithA(ov, FillA(0x55, fill)));
+            res["GlassStrokeSoft"] = new SolidColorBrush(WithA(ov, FillA(0x2E, fill)));
+            res["SwitchOff"] = new SolidColorBrush(WithA(ov, FillA(0x3A, fill)));
 
-            res["SidebarFill"] = VGrad(WithA(ov, 0x2A), WithA(ov, 0x10));
-            res["GlassFill"] = VGrad(WithA(ov, 0x2E), WithA(ov, 0x14));
-            res["GlassFillHover"] = VGrad(WithA(ov, 0x4C), WithA(ov, 0x24));
+            res["SidebarFill"] = VGrad(WithA(ov, FillA(0x2A, fill)), WithA(ov, FillA(0x10, fill)));
+            res["GlassFill"] = VGrad(WithA(ov, FillA(0x2E, fill)), WithA(ov, FillA(0x14, fill)));
+            res["GlassFillHover"] = VGrad(WithA(ov, FillA(0x4C, fill)), WithA(ov, FillA(0x24, fill)));
 
             // ---- window backdrop -------------------------------------------------
             if (!string.IsNullOrWhiteSpace(p.BgImageUrl))
@@ -130,7 +134,7 @@ namespace TwoTo1Screen.Services
             if (s.LiquidGlassEnabled && string.IsNullOrWhiteSpace(p.BgImageUrl))
             {
                 int t = Math.Clamp(s.GlassTransparency, 0, 100);
-                Color bg = Hex(p.Bg, Color.FromRgb(0x15, 0x18, 0x1D));
+                Color bg = EffectiveTint(s, p);
                 byte tintA = (byte)(0xFF - t * (0xFF - 0x12) / 100);
                 uint tint = (uint)((tintA << 24) | (bg.B << 16) | (bg.G << 8) | bg.R); // 0xAABBGGRR
                 Glass.EnableAcrylic(hwnd, tint);
@@ -141,6 +145,27 @@ namespace TwoTo1Screen.Services
             }
             Glass.RoundCorners(hwnd);
         }
+
+        // ---- effective (override-aware) colours for Liquid Glass ------------------
+        /// <summary>Accent colour honouring the Liquid Glass accent override.</summary>
+        private static Color EffectiveAccent(AppSettings s, ThemePalette p)
+        {
+            if (s.LiquidGlassEnabled && !string.IsNullOrWhiteSpace(s.GlassAccentColor))
+                return Hex(s.GlassAccentColor, Hex(p.Accent, Color.FromRgb(0xCF, 0xE0, 0xF2)));
+            return Hex(p.Accent, Color.FromRgb(0xCF, 0xE0, 0xF2));
+        }
+
+        /// <summary>Backdrop tint colour honouring the Liquid Glass tint override.</summary>
+        private static Color EffectiveTint(AppSettings s, ThemePalette p)
+        {
+            if (s.LiquidGlassEnabled && !string.IsNullOrWhiteSpace(s.GlassTintColor))
+                return Hex(s.GlassTintColor, Hex(p.Bg, Color.FromRgb(0x15, 0x18, 0x1D)));
+            return Hex(p.Bg, Color.FromRgb(0x15, 0x18, 0x1D));
+        }
+
+        /// <summary>Scale an overlay alpha by the bars/cards strength factor (0..1).</summary>
+        private static byte FillA(int baseAlpha, double factor) =>
+            (byte)Math.Clamp((int)Math.Round(baseAlpha * factor), 0, 255);
 
         // ---- catalog --------------------------------------------------------------
         private static string CatalogCachePath => Path.Combine(AppSettings.Dir, "themes.cache.json");

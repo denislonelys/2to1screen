@@ -1,0 +1,131 @@
+<UserControl x:Class="TwoTo1Screen.Views.LiquidGlassView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:views="clr-namespace:TwoTo1Screen.Views">
+    <Grid Margin="8,4,2,0">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <StackPanel Grid.Row="0" Margin="2,0,2,12">
+            <TextBlock Text="Liquid Glass" Style="{StaticResource H1}" />
+            <TextBlock Style="{StaticResource Body}" Margin="0,4,0,0"
+                       Text="Прозрачная стеклянная тема — сквозь окно видно обои. Настройте прозрачность, силу стекла и цвета." />
+        </StackPanel>
+
+        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" Padding="0,0,8,0">
+            <StackPanel>
+
+                <!-- ===== Включение + прозрачность ===== -->
+                <Border Style="{StaticResource Card}">
+                    <StackPanel>
+                        <Grid views:BindHelper.Action="toggle_glass" Cursor="Hand">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                                <TextBlock Text="Включить Liquid Glass" Style="{StaticResource H2}" />
+                                <TextBlock Style="{StaticResource Caption}" Margin="0,3,0,0"
+                                           Text="По умолчанию выключено. Клик колёсиком по строке — назначить горячую клавишу." />
+                            </StackPanel>
+                            <CheckBox x:Name="SwGlass" Grid.Column="1" Style="{StaticResource GlassSwitch}"
+                                      VerticalAlignment="Center" Click="SwGlass_Click" />
+                        </Grid>
+
+                        <Border Height="1" Background="{DynamicResource GlassStrokeSoft}" Margin="0,14" />
+
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Grid.Column="0" Text="Прозрачность" Style="{StaticResource H2}" />
+                            <TextBlock x:Name="TransVal" Grid.Column="1" Style="{StaticResource H2}" />
+                        </Grid>
+                        <TextBlock Style="{StaticResource Caption}" Margin="0,2,0,0"
+                                   Text="0 — без прозрачности, 100 — окно почти полностью прозрачное (видно обои)." />
+                        <Slider x:Name="TransSlider" Style="{StaticResource GlassSlider}" Minimum="0" Maximum="100"
+                                SmallChange="1" LargeChange="10" Margin="0,8,0,0" ValueChanged="TransSlider_ValueChanged" />
+
+                        <Border Height="1" Background="{DynamicResource GlassStrokeSoft}" Margin="0,14" />
+
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Grid.Column="0" Text="Сила стекла (бары)" Style="{StaticResource H2}" />
+                            <TextBlock x:Name="FillVal" Grid.Column="1" Style="{StaticResource H2}" />
+                        </Grid>
+                        <TextBlock Style="{StaticResource Caption}" Margin="0,2,0,0"
+                                   Text="0 — бары/карточки полностью прозрачные, 100 — стандартный матовый эффект." />
+                        <Slider x:Name="FillSlider" Style="{StaticResource GlassSlider}" Minimum="0" Maximum="100"
+                                SmallChange="1" LargeChange="10" Margin="0,8,0,0" ValueChanged="FillSlider_ValueChanged" />
+                    </StackPanel>
+                </Border>
+
+                <!-- ===== Цвет акцента ===== -->
+                <Border Style="{StaticResource Card}" Margin="0,14,0,0">
+                    <StackPanel>
+                        <TextBlock Text="Цвет акцента" Style="{StaticResource H2}" />
+                        <TextBlock Style="{StaticResource Caption}" Margin="0,3,0,0"
+                                   Text="Основной цвет — кнопки, переключатели, выделения." />
+                        <WrapPanel x:Name="AccentSwatches" Margin="0,10,0,0" />
+                        <Grid Margin="0,12,0,0">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <Border x:Name="AccentPreview" Grid.Column="0" Width="36" Height="36" CornerRadius="9"
+                                    BorderBrush="{DynamicResource GlassStroke}" BorderThickness="1" />
+                            <Border Grid.Column="1" CornerRadius="10" Background="{DynamicResource GlassFill}" Margin="10,0,0,0"
+                                    BorderBrush="{DynamicResource GlassStroke}" BorderThickness="1" Padding="4">
+                                <TextBox x:Name="AccentBox" Background="Transparent" BorderThickness="0" Padding="8,7"
+                                         FontFamily="Consolas" Foreground="{DynamicResource TextPrimary}"
+                                         CaretBrush="{DynamicResource TextPrimary}" KeyDown="AccentBox_KeyDown" />
+                            </Border>
+                            <Button Grid.Column="2" Content="Выбрать" Style="{StaticResource GlassButton}" Margin="10,0,0,0" Click="PickAccent_Click" />
+                            <Button Grid.Column="3" Content="По теме" Style="{StaticResource GlassButton}" Margin="8,0,0,0" Click="ResetAccent_Click" />
+                        </Grid>
+                    </StackPanel>
+                </Border>
+
+                <!-- ===== Цвет стекла (подложка) ===== -->
+                <Border Style="{StaticResource Card}" Margin="0,14,0,0">
+                    <StackPanel>
+                        <TextBlock Text="Цвет стекла (подложка)" Style="{StaticResource H2}" />
+                        <TextBlock Style="{StaticResource Caption}" Margin="0,3,0,0"
+                                   Text="Оттенок самого стекла, сквозь которое видно обои." />
+                        <WrapPanel x:Name="TintSwatches" Margin="0,10,0,0" />
+                        <Grid Margin="0,12,0,0">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <Border x:Name="TintPreview" Grid.Column="0" Width="36" Height="36" CornerRadius="9"
+                                    BorderBrush="{DynamicResource GlassStroke}" BorderThickness="1" />
+                            <Border Grid.Column="1" CornerRadius="10" Background="{DynamicResource GlassFill}" Margin="10,0,0,0"
+                                    BorderBrush="{DynamicResource GlassStroke}" BorderThickness="1" Padding="4">
+                                <TextBox x:Name="TintBox" Background="Transparent" BorderThickness="0" Padding="8,7"
+                                         FontFamily="Consolas" Foreground="{DynamicResource TextPrimary}"
+                                         CaretBrush="{DynamicResource TextPrimary}" KeyDown="TintBox_KeyDown" />
+                            </Border>
+                            <Button Grid.Column="2" Content="Выбрать" Style="{StaticResource GlassButton}" Margin="10,0,0,0" Click="PickTint_Click" />
+                            <Button Grid.Column="3" Content="По теме" Style="{StaticResource GlassButton}" Margin="8,0,0,0" Click="ResetTint_Click" />
+                        </Grid>
+                        <TextBlock x:Name="GlassOffNote" Style="{StaticResource Caption}" Foreground="{DynamicResource TextMuted}"
+                                   Margin="0,12,0,0" Text="Цвета и прозрачность применяются при включённом Liquid Glass." />
+                    </StackPanel>
+                </Border>
+
+                <Border Height="14" Background="Transparent" />
+            </StackPanel>
+        </ScrollViewer>
+    </Grid>
+</UserControl>

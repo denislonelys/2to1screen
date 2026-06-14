@@ -1,10 +1,11 @@
+using System.ComponentModel;
 using System.Windows.Media;
 using TwoTo1Screen.Services;
 
 namespace TwoTo1Screen.Views
 {
     /// <summary>View-model for a theme tile in the store (precomputed preview brushes).</summary>
-    public sealed class ThemeVm
+    public sealed class ThemeVm : INotifyPropertyChanged
     {
         public string Id { get; }
         public string Name { get; }
@@ -17,6 +18,14 @@ namespace TwoTo1Screen.Views
         public Brush AccentBrush { get; }
         public Brush TextBrush { get; }
         public Brush MutedBrush { get; }
+
+        private bool _isActive;
+        public bool IsActive
+        {
+            get => _isActive;
+            set { if (_isActive != value) { _isActive = value; PropertyChanged?.Invoke(this, ActiveArgs); } }
+        }
+        private static readonly PropertyChangedEventArgs ActiveArgs = new PropertyChangedEventArgs(nameof(IsActive));
 
         public string AuthorLine =>
             string.IsNullOrWhiteSpace(Author) ? (Mode == "light" ? "светлая" : "тёмная")
@@ -33,5 +42,7 @@ namespace TwoTo1Screen.Views
         }
 
         private static Brush Freeze(Brush b) { if (b.CanFreeze) b.Freeze(); return b; }
+
+        public event PropertyChangedEventHandler? PropertyChanged;
     }
 }
