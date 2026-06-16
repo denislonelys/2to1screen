@@ -13,9 +13,9 @@
     <EnableWindowsTargeting>true</EnableWindowsTargeting>
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <ApplicationIcon>assets\app.ico</ApplicationIcon>
-    <Version>1.2.4</Version>
-    <FileVersion>1.2.4.0</FileVersion>
-    <AssemblyVersion>1.2.4.0</AssemblyVersion>
+    <Version>1.2.5</Version>
+    <FileVersion>1.2.5.0</FileVersion>
+    <AssemblyVersion>1.2.5.0</AssemblyVersion>
     <Product>2to1screen</Product>
     <Company>dirroladd</Company>
     <Description>Качественные скриншоты одного монитора на Windows 11 с двумя экранами</Description>

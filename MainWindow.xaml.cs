@@ -86,6 +86,9 @@ namespace TwoTo1Screen
             PageApp.RefreshRunningState();
         }
 
+        /// <summary>Reflect a capture-monitor change (e.g. triggered by the switch-monitor hotkey).</summary>
+        public void RefreshMonitorSelection() => PageSettings?.RefreshMonitorSelection();
+
         private void Nav_Checked(object sender, RoutedEventArgs e)
         {
             if (PageApp == null || PageSettings == null || PageThemes == null || PageGlass == null || PageDev == null)

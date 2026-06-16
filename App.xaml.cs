@@ -139,6 +139,36 @@ namespace TwoTo1Screen
                 if (!LicenseBasic) return;
                 Task.Run(() => { try { WindowManager.MinimizeMonitorUnderCursor(); } catch { } });
             });
+            ActionRegistry.Register("switch_monitor", "Переключить монитор для скриншота", () =>
+            {
+                if (!LicenseBasic) return;
+                SwitchScreenshotMonitor();
+            });
+        }
+
+        /// <summary>Cycle the capture target to the next physical monitor and report it.</summary>
+        private void SwitchScreenshotMonitor()
+        {
+            var monitors = MonitorService.GetMonitors();
+            if (monitors.Count == 0) return;
+
+            MonitorEntry current;
+            try { current = MonitorService.Resolve(Settings, monitors); }
+            catch { current = monitors[0]; }
+
+            int next = monitors.Count > 0 ? (current.Index + 1) % monitors.Count : 0;
+            var target = monitors[next];
+
+            Settings.MonitorDevice = target.Device;
+            Settings.MonitorIndex = target.Index;
+            Settings.Save();
+
+            _main?.RefreshMonitorSelection();
+
+            if (monitors.Count > 1)
+                _tray?.Notify("2to1screen", $"Монитор для скриншота: {target.Title} ({target.Sub})");
+            else
+                _tray?.Notify("2to1screen", "Обнаружен только один монитор.");
         }
 
         // ---- theme ----

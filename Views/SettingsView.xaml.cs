@@ -204,11 +204,46 @@ namespace TwoTo1Screen.Views
 
         public void RefreshHotkeyHints()
         {
-            if (WinDHotkey == null) return;
-            App.Settings.Hotkeys.TryGetValue("minimize_monitor", out var combo);
-            WinDHotkey.Text = string.IsNullOrEmpty(combo)
-                ? "Клик колёсиком по строке — назначить свою горячую клавишу."
-                : $"Горячая клавиша: {combo}. Клик колёсиком по строке — изменить.";
+            if (WinDHotkey != null)
+            {
+                App.Settings.Hotkeys.TryGetValue("minimize_monitor", out var combo);
+                WinDHotkey.Text = string.IsNullOrEmpty(combo)
+                    ? "Клик колёсиком по строке — назначить свою горячую клавишу."
+                    : $"Горячая клавиша: {combo}. Клик колёсиком по строке — изменить.";
+            }
+
+            if (MonitorHotkey != null)
+            {
+                App.Settings.Hotkeys.TryGetValue("switch_monitor", out var mcombo);
+                MonitorHotkey.Text = string.IsNullOrEmpty(mcombo)
+                    ? "Клик колёсиком по этому блоку — назначить горячую клавишу переключения монитора."
+                    : $"Переключение монитора: {mcombo}. Клик колёсиком по блоку — изменить.";
+            }
+        }
+
+        /// <summary>Re-select the monitor radio after the capture target changed elsewhere (e.g. via hotkey).</summary>
+        public void RefreshMonitorSelection()
+        {
+            Dispatcher.Invoke(() =>
+            {
+                if (MonitorList == null || MonitorList.Children.Count == 0) return;
+
+                if (_monitors.Count == 0)
+                    _monitors = MonitorService.GetMonitors();
+
+                MonitorEntry selected;
+                try { selected = MonitorService.Resolve(App.Settings, _monitors); }
+                catch { return; }
+
+                _loading = true;
+                try
+                {
+                    foreach (var child in MonitorList.Children)
+                        if (child is RadioButton rb && rb.Tag is MonitorEntry m)
+                            rb.IsChecked = m.Index == selected.Index;
+                }
+                finally { _loading = false; }
+            });
         }
 
         private void BtnFolder_Click(object sender, RoutedEventArgs e)

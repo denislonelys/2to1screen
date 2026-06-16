@@ -14,9 +14,9 @@ namespace TwoTo1Screen.Services
                 try
                 {
                     var v = Assembly.GetExecutingAssembly().GetName().Version;
-                    return v == null ? "1.2.4" : $"{v.Major}.{v.Minor}.{v.Build}";
+                    return v == null ? "1.2.5" : $"{v.Major}.{v.Minor}.{v.Build}";
                 }
-                catch { return "1.2.4"; }
+                catch { return "1.2.5"; }
             }
         }
 
